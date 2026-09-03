@@ -75,6 +75,22 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
   const [isDetailScopeDropdownOpen, setIsDetailScopeDropdownOpen] = useState(false);
   const [detailScopeSearchQuery, setDetailScopeSearchQuery] = useState("");
+  const detailScopeDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        detailScopeDropdownRef.current &&
+        !detailScopeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDetailScopeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Sync profileForm when firm changes
   React.useEffect(() => {
@@ -491,7 +507,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                       </div>
 
                       {/* Multi-Select Dropdown Trigger */}
-                      <div className="relative">
+                      <div className="relative" ref={detailScopeDropdownRef}>
                         <button
                           type="button"
                           onClick={() => setIsDetailScopeDropdownOpen((prev) => !prev)}
@@ -638,34 +654,6 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                           </div>
                         )}
                       </div>
-
-                      {/* Selected Badges / Chips */}
-                      {currentScopes.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mt-2">
-                          {currentScopes.map((scope) => (
-                            <span
-                              key={scope}
-                              className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 text-[11px] font-bold shadow-2xs"
-                            >
-                              <span>{scope}</span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = currentScopes.filter((s) => s !== scope);
-                                  setProfileForm({
-                                    ...profileForm,
-                                    industryScope: updated.join(", "),
-                                  });
-                                }}
-                                className="text-indigo-400 hover:text-indigo-700 hover:bg-indigo-200/60 rounded p-0.5 transition-colors cursor-pointer"
-                                title={`Remove ${scope}`}
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   );
                 })()}

@@ -38,6 +38,22 @@ export const FirmModal: React.FC<FirmModalProps> = ({
   const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
   const [isScopeDropdownOpen, setIsScopeDropdownOpen] = useState(false);
   const [scopeSearchQuery, setScopeSearchQuery] = useState("");
+  const scopeDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        scopeDropdownRef.current &&
+        !scopeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsScopeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   const [contactEmail, setContactEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -200,7 +216,7 @@ export const FirmModal: React.FC<FirmModalProps> = ({
               </div>
 
               {/* Multi-Select Dropdown Trigger */}
-              <div className="relative">
+              <div className="relative" ref={scopeDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setIsScopeDropdownOpen((prev) => !prev)}
@@ -325,28 +341,6 @@ export const FirmModal: React.FC<FirmModalProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* Selected Badges / Chips */}
-              {selectedScopes.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {selectedScopes.map((scope) => (
-                    <span
-                      key={scope}
-                      className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 text-[11px] font-bold shadow-2xs"
-                    >
-                      <span>{scope}</span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedScopes(selectedScopes.filter((s) => s !== scope))}
-                        className="text-indigo-400 hover:text-indigo-700 hover:bg-indigo-200/60 rounded p-0.5 transition-colors cursor-pointer"
-                        title={`Remove ${scope}`}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

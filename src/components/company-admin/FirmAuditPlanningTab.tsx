@@ -152,6 +152,23 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
   const [isAuditorDropdownOpen, setIsAuditorDropdownOpen] = useState(false);
   const [frameworkSearchQuery, setFrameworkSearchQuery] = useState("");
   const [auditorSearchQuery, setAuditorSearchQuery] = useState("");
+  const auditorDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        auditorDropdownRef.current &&
+        !auditorDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsAuditorDropdownOpen(false);
+        setIsFrameworkDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Reschedule form state
   const [rescheduleStartDate, setRescheduleStartDate] = useState("");
@@ -982,7 +999,7 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
                 </div>
 
                 {/* Multi-Select Dropdown Trigger */}
-                <div className="relative">
+                <div className="relative" ref={auditorDropdownRef}>
                   <button
                     type="button"
                     onClick={() => {
@@ -1094,36 +1111,6 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
                     </div>
                   )}
                 </div>
-
-                {/* Selected Lead Auditors Badges / Chips */}
-                {formLeadAuditorIds.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {users
-                      .filter((u) => formLeadAuditorIds.includes(u.id))
-                      .map((u, idx) => (
-                        <span
-                          key={u.id}
-                          className="inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-2xs"
-                        >
-                          <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center font-bold">
-                            {idx === 0 ? "L" : "C"}
-                          </span>
-                          <span>{u.name} {idx === 0 ? "(Lead)" : "(Co-Lead)"}</span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleFormLeadAuditor(u.id);
-                            }}
-                            className="text-emerald-400 hover:text-emerald-700 hover:bg-emerald-200/60 rounded p-0.5 transition-colors cursor-pointer"
-                            title={`Remove ${u.name}`}
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ))}
-                  </div>
-                )}
               </div>
 
               {/* Dates and Times */}

@@ -1,17 +1,13 @@
 import React, { useState } from "react";
 import { useAudit } from "../../context/AuditContext";
-import { canCreateAuditPlan } from "../../utils/rbac";
 import {
-  ShieldCheck,
   Bell,
   Search,
   ChevronDown,
-  UserCheck,
   RotateCcw,
   PlusCircle,
   LogOut,
 } from "lucide-react";
-import { UserRole } from "../../types/audit";
 
 interface HeaderProps {
   onOpenNotifications: () => void;
@@ -24,10 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const {
     currentUser,
-    setCurrentUser,
     logout,
-    setIsRoleMatrixModalOpen,
-    users,
     notifications,
     searchQuery,
     setSearchQuery,
@@ -36,24 +29,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const getRoleBadgeStyle = (role: UserRole) => {
-    switch (role) {
-      case "Platform Admin":
-      case "Admin":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      case "Company Admin":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Audit Manager":
-        return "bg-indigo-100 text-indigo-800 border-indigo-200";
-      case "Auditor":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
-      case "Customer Representative":
-        return "bg-amber-100 text-amber-800 border-amber-200";
-      case "Customer Viewer":
-        return "bg-slate-100 text-slate-700 border-slate-200";
-    }
-  };
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
@@ -81,28 +56,14 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center gap-2.5 sm:gap-3">
-        {/* Role Matrix Trigger (Admin Only) */}
-        {(currentUser.role === "Platform Admin" || currentUser.role === "Admin") && (
-          <button
-            onClick={() => setIsRoleMatrixModalOpen(true)}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
-            title="Inspect Role Matrix"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
-            <span>RBAC Matrix</span>
-          </button>
-        )}
-
-        {/* Quick Action for Managers/Admins */}
-        {canCreateAuditPlan(currentUser.role) && (
-          <button
-            onClick={onQuickCreateAudit}
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Plan Audit</span>
-          </button>
-        )}
+        {/* Quick Action */}
+        <button
+          onClick={onQuickCreateAudit}
+          className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-2xs transition-colors cursor-pointer"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+          <span>Plan Audit</span>
+        </button>
 
         {/* Notification Bell */}
         <button
@@ -121,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Divider */}
         <div className="h-5 w-px bg-slate-200" />
 
-        {/* Role Switcher & User Profile */}
+        {/* User Profile */}
         <div className="relative">
           <button
             onClick={() => setRoleMenuOpen(!roleMenuOpen)}
@@ -137,11 +98,11 @@ export const Header: React.FC<HeaderProps> = ({
                 {currentUser.name}
               </div>
               <div className="flex items-center gap-1">
-                <span className={`text-[10px] px-1.5 py-0.2 font-medium rounded border ${getRoleBadgeStyle(currentUser.role)}`}>
-                  {currentUser.role}
+                <span className="text-[10px] px-1.5 py-0.2 font-medium rounded border bg-purple-100 text-purple-800 border-purple-200">
+                  {currentUser.role || "Platform Admin"}
                 </span>
                 <span className="text-[10px] text-slate-500 truncate max-w-[110px]">
-                  • {currentUser.companyName}
+                  • {currentUser.companyName || "Audit Firm"}
                 </span>
               </div>
             </div>
@@ -170,8 +131,8 @@ export const Header: React.FC<HeaderProps> = ({
                       {currentUser.email}
                     </div>
                     <div className="mt-1">
-                      <span className={`text-[10px] px-2 py-0.5 font-medium rounded border ${getRoleBadgeStyle(currentUser.role)}`}>
-                        {currentUser.role}
+                      <span className="text-[10px] px-2 py-0.5 font-medium rounded border bg-purple-100 text-purple-800 border-purple-200">
+                        {currentUser.role || "Platform Admin"}
                       </span>
                     </div>
                   </div>

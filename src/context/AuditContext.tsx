@@ -92,8 +92,6 @@ interface AuditContextType {
   setActiveTemplateId: (id: string | null) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  isRoleMatrixModalOpen: boolean;
-  setIsRoleMatrixModalOpen: (open: boolean) => void;
   // Actions
   addCustomer: (customer: Omit<Customer, "id" | "createdAt" | "totalAuditsCount" | "activeAuditsCount">) => void;
   updateCustomer: (id: string, updates: Partial<Customer>) => void;
@@ -189,8 +187,6 @@ export const AuditProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const savedAuth = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED);
     return savedAuth !== null ? savedAuth === "true" : true;
   });
-
-  const [isRoleMatrixModalOpen, setIsRoleMatrixModalOpen] = useState(false);
 
   const [customers, setCustomers] = useState<Customer[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CUSTOMERS);
@@ -1052,8 +1048,6 @@ export const AuditProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loginWithEmail,
         registerUser,
         logout,
-        isRoleMatrixModalOpen,
-        setIsRoleMatrixModalOpen,
         users,
         addUser,
         updateUser,

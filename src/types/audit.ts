@@ -172,6 +172,8 @@ export interface ChecklistItemResponse {
   evidenceAttachments?: EvidenceAttachment[];
   evidenceFiles?: EvidenceAttachment[]; // alias
   findingId?: string; // Linked finding if failed/NC
+  severities?: string[]; // Multi-select severities for Minor & Major NC
+  severityTags?: string[]; // alias
   answeredAt?: string;
   answeredBy?: string;
 }

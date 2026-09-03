@@ -26,11 +26,24 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ShieldAlert,
 } from "lucide-react";
 import { LogFindingModal } from "../modals/LogFindingModal";
 import { EvidenceUploadModal } from "../modals/EvidenceUploadModal";
 import { FindingsView } from "../findings/FindingsView";
 import { AuditReportView } from "../reports/AuditReportView";
+
+export const NC_SEVERITY_OPTIONS = [
+  "Critical Severity",
+  "High Risk",
+  "Medium Risk",
+  "Low / Isolated",
+  "Process Deviation",
+  "Documentation & Records Gap",
+  "Regulatory / Statutory Risk",
+  "Operational Control Failure",
+  "Safety / Product Integrity",
+];
 
 export interface PerformAuditViewProps {
   auditId?: string | null;
@@ -135,11 +148,39 @@ export const PerformAuditView: React.FC<PerformAuditViewProps> = ({
 
   const handleResponseChange = (questionId: string, status: ResponseStatus, score?: number) => {
     const existing = responses[questionId];
+    let defaultSeverities = existing?.severities;
+    if (!defaultSeverities || defaultSeverities.length === 0) {
+      if (status === "MINOR_NC") {
+        defaultSeverities = ["Medium Risk", "Process Deviation"];
+      } else if (status === "MAJOR_NC") {
+        defaultSeverities = ["Critical Severity", "Regulatory / Statutory Risk"];
+      }
+    }
+
     updateAuditResponse(currentAudit.id, questionId, {
       status,
       score: score !== undefined ? score : (status === "PASS" ? 100 : status === "MINOR_NC" ? 60 : status === "MAJOR_NC" ? 0 : 100),
       notes: existing?.notes || "",
       evidenceFiles: existing?.evidenceFiles || [],
+      severities: (status === "MINOR_NC" || status === "MAJOR_NC") ? defaultSeverities : [],
+      severityTags: (status === "MINOR_NC" || status === "MAJOR_NC") ? defaultSeverities : [],
+    });
+  };
+
+  const handleToggleSeverity = (questionId: string, severityName: string) => {
+    const existing = responses[questionId];
+    const currentSeverities = existing?.severities || [];
+    const updated = currentSeverities.includes(severityName)
+      ? currentSeverities.filter((s) => s !== severityName)
+      : [...currentSeverities, severityName];
+
+    updateAuditResponse(currentAudit.id, questionId, {
+      status: existing?.status || "MINOR_NC",
+      score: existing?.score,
+      notes: existing?.notes || "",
+      evidenceFiles: existing?.evidenceFiles || [],
+      severities: updated,
+      severityTags: updated,
     });
   };
 
@@ -150,6 +191,8 @@ export const PerformAuditView: React.FC<PerformAuditViewProps> = ({
       score: existing?.score !== undefined ? existing.score : 100,
       notes,
       evidenceFiles: existing?.evidenceFiles || [],
+      severities: existing?.severities,
+      severityTags: existing?.severityTags,
     });
   };
 
@@ -161,6 +204,8 @@ export const PerformAuditView: React.FC<PerformAuditViewProps> = ({
       score: existing?.score !== undefined ? existing.score : 100,
       notes: existing?.notes || "",
       evidenceFiles: [...currentFiles, attachment],
+      severities: existing?.severities,
+      severityTags: existing?.severityTags,
     });
   };
 
@@ -554,6 +599,68 @@ export const PerformAuditView: React.FC<PerformAuditViewProps> = ({
                     className="w-full text-xs p-2.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-800 shadow-2xs"
                   />
                 </div>
+
+                {/* Severity Multi-Select Section for Minor NC / Major NC */}
+                {(currentStatus === "MINOR_NC" || currentStatus === "MAJOR_NC") && (
+                  <div
+                    className={`mt-3 p-3 rounded-xl border transition-all ${
+                      currentStatus === "MAJOR_NC"
+                        ? "bg-rose-50/60 border-rose-200"
+                        : "bg-amber-50/60 border-amber-200"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                        <ShieldAlert
+                          className={`w-4 h-4 ${
+                            currentStatus === "MAJOR_NC" ? "text-rose-600" : "text-amber-600"
+                          }`}
+                        />
+                        <span
+                          className={
+                            currentStatus === "MAJOR_NC" ? "text-rose-950" : "text-amber-950"
+                          }
+                        >
+                          {currentStatus === "MAJOR_NC"
+                            ? "Major NC Severity Classification (Multi-Select)"
+                            : "Minor NC Severity Classification (Multi-Select)"}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                          currentStatus === "MAJOR_NC"
+                            ? "bg-rose-100 text-rose-800 border-rose-300"
+                            : "bg-amber-100 text-amber-800 border-amber-300"
+                        }`}
+                      >
+                        {resp?.severities?.length || 0} Selected
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5">
+                      {NC_SEVERITY_OPTIONS.map((severityOpt) => {
+                        const isSelected = (resp?.severities || []).includes(severityOpt);
+                        return (
+                          <button
+                            key={severityOpt}
+                            type="button"
+                            onClick={() => handleToggleSeverity(q.id, severityOpt)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                              isSelected
+                                ? currentStatus === "MAJOR_NC"
+                                  ? "bg-rose-600 text-white border-rose-600"
+                                  : "bg-amber-600 text-white border-amber-600"
+                                : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                            <span>{severityOpt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Action Row: Evidence and Findings */}
                 <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">

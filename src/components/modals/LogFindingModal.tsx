@@ -26,6 +26,10 @@ export const LogFindingModal: React.FC<LogFindingModalProps> = ({
   const [title, setTitle] = useState("");
   const [requirementId, setRequirementId] = useState(defaultRequirementId || "ISO 9001: Clause 8.1");
   const [severity, setSeverity] = useState<FindingSeverity>("Major");
+  const [selectedSeverities, setSelectedSeverities] = useState<string[]>([
+    "Major Non-Conformity",
+    "Process Deviation",
+  ]);
   const [category, setCategory] = useState("Operational Control & Quality");
   const [description, setDescription] = useState(defaultNotes || "");
   const [evidenceNotes, setEvidenceNotes] = useState("");
@@ -170,24 +174,69 @@ export const LogFindingModal: React.FC<LogFindingModalProps> = ({
             />
           </div>
 
-          {/* Severity & Category & Due Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Severity Level *
+          {/* Severity Classification (Multi-Select) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-slate-700">
+                Non-Conformity Severity Classification (Multi-Select) *
               </label>
-              <select
-                value={severity}
-                onChange={(e) => setSeverity(e.target.value as FindingSeverity)}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs cursor-pointer"
-              >
-                <option value="Critical">Critical Non-Conformity</option>
-                <option value="Major">Major Non-Conformity</option>
-                <option value="Minor">Minor Non-Conformity</option>
-                <option value="Observation">Observation / OFI</option>
-              </select>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                {selectedSeverities.length} Selected
+              </span>
             </div>
 
+            <div className="flex flex-wrap gap-1.5 p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+              {[
+                { id: "Critical Non-Conformity", primary: "Critical" },
+                { id: "Major Non-Conformity", primary: "Major" },
+                { id: "Minor Non-Conformity", primary: "Minor" },
+                { id: "Regulatory / Statutory Risk", primary: "Major" },
+                { id: "Operational Control Failure", primary: "Major" },
+                { id: "Process Deviation", primary: "Minor" },
+                { id: "Documentation Gap", primary: "Minor" },
+                { id: "Observation / OFI", primary: "Observation" },
+              ].map((item) => {
+                const isSelected = selectedSeverities.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      let updated: string[];
+                      if (isSelected) {
+                        updated = selectedSeverities.filter((s) => s !== item.id);
+                        if (updated.length === 0) updated = ["Minor Non-Conformity"];
+                      } else {
+                        updated = [...selectedSeverities, item.id];
+                      }
+                      setSelectedSeverities(updated);
+
+                      if (updated.some((s) => s.includes("Critical"))) {
+                        setSeverity("Critical");
+                      } else if (updated.some((s) => s.includes("Major") || s.includes("Regulatory") || s.includes("Operational"))) {
+                        setSeverity("Major");
+                      } else if (updated.some((s) => s.includes("Minor") || s.includes("Process") || s.includes("Documentation"))) {
+                        setSeverity("Minor");
+                      } else {
+                        setSeverity("Observation");
+                      }
+                    }}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                      isSelected
+                        ? "bg-rose-600 text-white border-rose-600"
+                        : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                    <span>{item.id}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Category & Due Date */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Category

@@ -30,8 +30,9 @@ import {
   CalendarCheck2,
   LayoutGrid,
   Table,
+  ChevronDown,
 } from "lucide-react";
-import { FirmModal } from "./FirmModal";
+import { FirmModal, INDUSTRY_SCOPE_OPTIONS } from "./FirmModal";
 import { FirmAuditPlanningTab } from "./FirmAuditPlanningTab";
 
 interface FirmDetailScreenProps {
@@ -72,6 +73,8 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
   // Profile in-place form state
   const [profileForm, setProfileForm] = useState<AuditFirm>(firm);
   const [profileSaveSuccess, setProfileSaveSuccess] = useState(false);
+  const [isDetailScopeDropdownOpen, setIsDetailScopeDropdownOpen] = useState(false);
+  const [detailScopeSearchQuery, setDetailScopeSearchQuery] = useState("");
 
   // Sync profileForm when firm changes
   React.useEffect(() => {
@@ -468,21 +471,204 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                 </div>
               </div>
 
+              {/* Industry Scope of Surveillance (Multi-Select) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Industry Scope of Surveillance
-                </label>
-                <textarea
-                  rows={2}
-                  value={profileForm.industryScope}
-                  onChange={(e) =>
-                    setProfileForm({
-                      ...profileForm,
-                      industryScope: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
-                />
+                {(() => {
+                  const currentScopes = (profileForm.industryScope || "")
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean);
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-bold text-slate-700">
+                          Industry Scope of Surveillance (Multi-Select)
+                        </label>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          {currentScopes.length} Selected
+                        </span>
+                      </div>
+
+                      {/* Multi-Select Dropdown Trigger */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsDetailScopeDropdownOpen((prev) => !prev)}
+                          className="w-full min-h-[40px] px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-left flex items-center justify-between gap-2 hover:bg-slate-100/80 transition-colors cursor-pointer"
+                        >
+                          <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                            {currentScopes.length === 0 ? (
+                              <span className="text-slate-400">Select industry domains and sectors...</span>
+                            ) : (
+                              <span className="text-slate-800 font-semibold truncate">
+                                {currentScopes.join(", ")}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
+                            <span className="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded">
+                              {currentScopes.length}
+                            </span>
+                            <ChevronDown
+                              className={`w-4 h-4 transition-transform ${
+                                isDetailScopeDropdownOpen ? "rotate-180" : ""
+                              }`}
+                            />
+                          </div>
+                        </button>
+
+                        {/* Dropdown Popover */}
+                        {isDetailScopeDropdownOpen && (
+                          <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 space-y-2 max-h-64 overflow-y-auto">
+                            {/* Search inside dropdown */}
+                            <div className="relative">
+                              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                              <input
+                                type="text"
+                                placeholder="Search or add industry domain..."
+                                value={detailScopeSearchQuery}
+                                onChange={(e) => setDetailScopeSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && detailScopeSearchQuery.trim()) {
+                                    e.preventDefault();
+                                    if (!currentScopes.includes(detailScopeSearchQuery.trim())) {
+                                      const updated = [...currentScopes, detailScopeSearchQuery.trim()];
+                                      setProfileForm({
+                                        ...profileForm,
+                                        industryScope: updated.join(", "),
+                                      });
+                                    }
+                                    setDetailScopeSearchQuery("");
+                                  }
+                                }}
+                                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                              />
+                            </div>
+
+                            {/* Quick select buttons */}
+                            <div className="flex items-center justify-between pt-1 pb-1 border-b border-slate-100 text-[11px]">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    industryScope: INDUSTRY_SCOPE_OPTIONS.join(", "),
+                                  });
+                                }}
+                                className="text-indigo-600 hover:text-indigo-800 font-bold cursor-pointer"
+                              >
+                                Select All
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setProfileForm({
+                                    ...profileForm,
+                                    industryScope: "",
+                                  });
+                                }}
+                                className="text-slate-400 hover:text-slate-600 font-semibold cursor-pointer"
+                              >
+                                Clear All
+                              </button>
+                            </div>
+
+                            {/* Options list */}
+                            <div className="space-y-1">
+                              {INDUSTRY_SCOPE_OPTIONS.filter((item) =>
+                                item.toLowerCase().includes(detailScopeSearchQuery.toLowerCase())
+                              ).map((item) => {
+                                const isSelected = currentScopes.includes(item);
+                                return (
+                                  <div
+                                    key={item}
+                                    onClick={() => {
+                                      const updated = isSelected
+                                        ? currentScopes.filter((s) => s !== item)
+                                        : [...currentScopes, item];
+                                      setProfileForm({
+                                        ...profileForm,
+                                        industryScope: updated.join(", "),
+                                      });
+                                    }}
+                                    className={`p-2 rounded-lg flex items-center gap-2.5 cursor-pointer transition-colors ${
+                                      isSelected
+                                        ? "bg-indigo-50/80 border border-indigo-200"
+                                        : "hover:bg-slate-50 border border-transparent"
+                                    }`}
+                                  >
+                                    <div
+                                      className={`w-4 h-4 rounded flex items-center justify-center text-xs shrink-0 border ${
+                                        isSelected
+                                          ? "bg-indigo-600 border-indigo-600 text-white"
+                                          : "border-slate-300 bg-white"
+                                      }`}
+                                    >
+                                      {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                    </div>
+                                    <span className="font-semibold text-xs text-slate-800">{item}</span>
+                                  </div>
+                                );
+                              })}
+
+                              {/* Custom query addition */}
+                              {detailScopeSearchQuery.trim() &&
+                                !INDUSTRY_SCOPE_OPTIONS.some(
+                                  (o) => o.toLowerCase() === detailScopeSearchQuery.trim().toLowerCase()
+                                ) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (!currentScopes.includes(detailScopeSearchQuery.trim())) {
+                                        const updated = [...currentScopes, detailScopeSearchQuery.trim()];
+                                        setProfileForm({
+                                          ...profileForm,
+                                          industryScope: updated.join(", "),
+                                        });
+                                      }
+                                      setDetailScopeSearchQuery("");
+                                    }}
+                                    className="w-full text-left p-2 rounded-lg bg-indigo-50/60 hover:bg-indigo-100/80 text-indigo-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                                  >
+                                    <span>+ Add &quot;{detailScopeSearchQuery.trim()}&quot; as custom scope</span>
+                                  </button>
+                                )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Selected Badges / Chips */}
+                      {currentScopes.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {currentScopes.map((scope) => (
+                            <span
+                              key={scope}
+                              className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 text-[11px] font-bold shadow-2xs"
+                            >
+                              <span>{scope}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = currentScopes.filter((s) => s !== scope);
+                                  setProfileForm({
+                                    ...profileForm,
+                                    industryScope: updated.join(", "),
+                                  });
+                                }}
+                                className="text-indigo-400 hover:text-indigo-700 hover:bg-indigo-200/60 rounded p-0.5 transition-colors cursor-pointer"
+                                title={`Remove ${scope}`}
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

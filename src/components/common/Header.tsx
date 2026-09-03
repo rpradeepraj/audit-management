@@ -39,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const getRoleBadgeStyle = (role: UserRole) => {
     switch (role) {
+      case "Platform Admin":
       case "Admin":
         return "bg-purple-100 text-purple-800 border-purple-200";
       case "Company Admin":
@@ -81,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Right Controls */}
       <div className="flex items-center gap-2.5 sm:gap-3">
         {/* Role Matrix Trigger (Admin Only) */}
-        {currentUser.role === "Admin" && (
+        {(currentUser.role === "Platform Admin" || currentUser.role === "Admin") && (
           <button
             onClick={() => setIsRoleMatrixModalOpen(true)}
             className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-2xs"

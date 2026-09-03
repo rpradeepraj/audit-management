@@ -922,7 +922,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                   className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium"
                 >
                   <option value="All">All Roles</option>
-                  <option value="Admin">Admin</option>
+                  <option value="Platform Admin">Platform Admin</option>
                   <option value="Company Admin">Company Admin</option>
                   <option value="Audit Manager">Audit Manager</option>
                   <option value="Auditor">Auditor</option>
@@ -1497,7 +1497,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                     <option value="Auditor">Auditor (Field & Evidence Verification)</option>
                     <option value="Audit Manager">Audit Manager (Review & Signoff)</option>
                     <option value="Company Admin">Company Admin (Firm Lead)</option>
-                    <option value="Admin">System Administrator</option>
+                    <option value="Platform Admin">Platform Admin (System Governance)</option>
                   </select>
                 </div>
 

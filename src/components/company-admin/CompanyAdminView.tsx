@@ -1306,7 +1306,7 @@ export const CompanyAdminView: React.FC = () => {
                     onChange={(e) => setUserRole(e.target.value as UserRole)}
                     className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white font-medium cursor-pointer"
                   >
-                    <option value="Admin">Admin (System Governance)</option>
+                    <option value="Platform Admin">Platform Admin (System Governance)</option>
                     <option value="Company Admin">Company Admin (Managing Partner)</option>
                     <option value="Audit Manager">Audit Manager (Lead Engagement Lead)</option>
                     <option value="Auditor">Auditor (Field Specialist)</option>

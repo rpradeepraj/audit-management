@@ -111,6 +111,7 @@ export function getRolePermissionForModule(role: UserRole, tabId: ActiveTab): st
   }
 
   switch (role) {
+    case "Platform Admin":
     case "Admin":
       return item.admin;
     case "Company Admin":
@@ -135,39 +136,39 @@ export function isModuleAllowedForRole(role: UserRole, tabId: ActiveTab): boolea
 
 // Module-specific action permissions
 export function canManageTemplates(role: UserRole): boolean {
-  return role === "Admin" || role === "Company Admin" || role === "Audit Manager";
+  return role === "Platform Admin" || role === "Admin" || role === "Company Admin" || role === "Audit Manager";
 }
 
 export function canManageCustomers(role: UserRole): boolean {
-  return role === "Admin" || role === "Company Admin" || role === "Audit Manager";
+  return role === "Platform Admin" || role === "Admin" || role === "Company Admin" || role === "Audit Manager";
 }
 
 export function canCreateAuditPlan(role: UserRole): boolean {
-  return role === "Admin" || role === "Company Admin" || role === "Audit Manager";
+  return role === "Platform Admin" || role === "Admin" || role === "Company Admin" || role === "Audit Manager";
 }
 
 export function canExecutePerformAudit(role: UserRole): boolean {
-  return role === "Auditor" || role === "Admin" || role === "Company Admin";
+  return role === "Auditor" || role === "Platform Admin" || role === "Admin" || role === "Company Admin";
 }
 
 export function canReviewPerformAudit(role: UserRole): boolean {
-  return role === "Audit Manager" || role === "Company Admin" || role === "Admin";
+  return role === "Audit Manager" || role === "Company Admin" || role === "Platform Admin" || role === "Admin";
 }
 
 export function canLogFindings(role: UserRole): boolean {
-  return role === "Auditor" || role === "Audit Manager" || role === "Company Admin" || role === "Admin";
+  return role === "Auditor" || role === "Audit Manager" || role === "Company Admin" || role === "Platform Admin" || role === "Admin";
 }
 
 export function canFormulateCapa(role: UserRole): boolean {
-  return role === "Customer Representative" || role === "Admin" || role === "Company Admin";
+  return role === "Customer Representative" || role === "Platform Admin" || role === "Admin" || role === "Company Admin";
 }
 
 export function canReviewCapa(role: UserRole): boolean {
-  return role === "Audit Manager" || role === "Company Admin" || role === "Admin";
+  return role === "Audit Manager" || role === "Company Admin" || role === "Platform Admin" || role === "Admin";
 }
 
 export function canApproveReport(role: UserRole): boolean {
-  return role === "Audit Manager" || role === "Company Admin" || role === "Admin";
+  return role === "Audit Manager" || role === "Company Admin" || role === "Platform Admin" || role === "Admin";
 }
 
 export function isCustomerRole(role: UserRole): boolean {

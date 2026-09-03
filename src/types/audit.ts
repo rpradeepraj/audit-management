@@ -1,4 +1,5 @@
 export type UserRole =
+  | "Platform Admin"
   | "Admin"
   | "Company Admin"
   | "Audit Manager"

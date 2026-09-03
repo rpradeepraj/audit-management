@@ -288,8 +288,8 @@ export const AuditProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const user = users.find(
       (u) =>
         u.email.toLowerCase() === trimmed ||
-        (trimmed === "admin@auditfirm.com" && u.role === "Admin") ||
-        (trimmed === "victoria.sterling@auditcore.global" && u.role === "Admin")
+        (trimmed === "admin@auditfirm.com" && (u.role === "Platform Admin" || u.role === "Admin")) ||
+        (trimmed === "victoria.sterling@auditcore.global" && (u.role === "Platform Admin" || u.role === "Admin"))
     );
     if (!user) {
       return { success: false, error: "No user account registered with this email address. Please register or verify your credentials." };

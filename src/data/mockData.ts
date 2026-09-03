@@ -113,7 +113,7 @@ export const INITIAL_FIRMS: AuditFirm[] = [
 export const INITIAL_FIRM_ROLES: FirmRole[] = [
   {
     id: "role_admin",
-    name: "Admin",
+    name: "Platform Admin",
     description: "System & audit firm root administrator with complete platform governance, firm settings, and template authority.",
     category: "Firm Staff",
     permissions: [
@@ -238,7 +238,7 @@ export const INITIAL_USERS: User[] = [
     id: "usr_admin",
     name: "Victoria Sterling",
     email: "admin@auditfirm.com",
-    role: "Admin",
+    role: "Platform Admin",
     avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
     companyName: "Audit Firm",
     companyId: "comp_global",

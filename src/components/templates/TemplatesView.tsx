@@ -161,6 +161,7 @@ export const TemplatesView: React.FC<TemplatesViewProps> = () => {
   };
 
   const canManage =
+    currentUser.role === "Platform Admin" ||
     currentUser.role === "Admin" ||
     currentUser.role === "Company Admin" ||
     currentUser.role === "Audit Manager";

@@ -39,7 +39,7 @@ export const DashboardView: React.FC = () => {
     setIsRoleMatrixModalOpen,
   } = useAudit();
 
-  const isAdmin = currentUser.role === "Admin";
+  const isAdmin = currentUser.role === "Platform Admin" || currentUser.role === "Admin";
   const isCustomer = currentUser.role === "Customer Representative" || currentUser.role === "Customer Viewer";
   const isAuditor = currentUser.role === "Auditor";
 

@@ -214,6 +214,7 @@ export const CustomersView: React.FC = () => {
 
   const getRoleBadgeStyle = (role: string) => {
     switch (role) {
+      case "Platform Admin":
       case "Admin":
       case "Company Admin":
         return "bg-purple-50 text-purple-700 border-purple-200";
@@ -230,6 +231,7 @@ export const CustomersView: React.FC = () => {
   };
 
   const canManageFirms =
+    currentUser.role === "Platform Admin" ||
     currentUser.role === "Admin" ||
     currentUser.role === "Company Admin" ||
     currentUser.role === "Audit Manager";
@@ -794,7 +796,7 @@ export const CustomersView: React.FC = () => {
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   required
                 >
-                  <option value="Admin">Admin</option>
+                  <option value="Platform Admin">Platform Admin</option>
                   <option value="Audit Manager">Audit Manager</option>
                   <option value="Auditor">Auditor</option>
                   <option value="Client Representative">Client Representative</option>

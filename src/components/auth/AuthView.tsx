@@ -50,10 +50,10 @@ export const AuthView: React.FC = () => {
           <div className="border-b border-slate-800/80 pb-3 flex items-center justify-between">
             <div className="text-sm font-bold text-white flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-indigo-400" />
-              <span>Administrator Portal</span>
+              <span>Platform Administrator Portal</span>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-indigo-300 font-semibold">
-              Admin Access Only
+              Platform Admin Access Only
             </span>
           </div>
 
@@ -68,7 +68,7 @@ export const AuthView: React.FC = () => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                Admin Email Address
+                Platform Admin Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -111,7 +111,7 @@ export const AuthView: React.FC = () => {
               type="submit"
               className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
-              <span>Sign In as Admin</span>
+              <span>Sign In as Platform Admin</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>

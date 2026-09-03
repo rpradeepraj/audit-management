@@ -47,7 +47,7 @@ const MainLayout: React.FC = () => {
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Return to Dashboard</span>
             </button>
-            {currentUser.role === "Admin" && (
+            {(currentUser.role === "Platform Admin" || currentUser.role === "Admin") && (
               <button
                 onClick={() => setIsRoleMatrixModalOpen(true)}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors"
@@ -119,7 +119,7 @@ const MainLayout: React.FC = () => {
       )}
 
       {/* Global Role Access Matrix Modal (Admin only) */}
-      {currentUser.role === "Admin" && <RoleMatrixModal />}
+      {(currentUser.role === "Platform Admin" || currentUser.role === "Admin") && <RoleMatrixModal />}
     </div>
   );
 };

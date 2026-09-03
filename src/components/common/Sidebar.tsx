@@ -76,7 +76,7 @@ export const Sidebar: React.FC = () => {
       id: "templates",
       label: "Audit Templates",
       icon: <FileSpreadsheet className="w-4 h-4" />,
-      section: currentUser.role === "Admin" ? "firm" : "workflow",
+      section: (currentUser.role === "Platform Admin" || currentUser.role === "Admin") ? "firm" : "workflow",
     },
     {
       id: "findings",
@@ -113,6 +113,7 @@ export const Sidebar: React.FC = () => {
 
   const getRoleBadgeStyle = (role: UserRole) => {
     switch (role) {
+      case "Platform Admin":
       case "Admin":
         return "bg-purple-900/60 text-purple-300 border-purple-700/50";
       case "Company Admin":
@@ -169,7 +170,7 @@ export const Sidebar: React.FC = () => {
             </div>
           </div>
         </div>
-        {currentUser.role === "Admin" && (
+        {(currentUser.role === "Platform Admin" || currentUser.role === "Admin") && (
           <button
             onClick={() => setIsRoleMatrixModalOpen(true)}
             className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-md transition-colors cursor-pointer"
@@ -182,12 +183,9 @@ export const Sidebar: React.FC = () => {
 
       {/* Navigation list */}
       <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
-        {currentUser.role === "Admin" ? (
-          /* Admin Specific Navigation: Dashboard, Audit Firm, Audit Templates */
+        {(currentUser.role === "Platform Admin" || currentUser.role === "Admin") ? (
+          /* Platform Admin Specific Navigation: Dashboard, Audit Firm, Audit Templates */
           <div className="space-y-1">
-            <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Admin Control Plane
-            </div>
             {visibleItems.map((item) => {
               const isActive = activeTab === item.id;
               return (

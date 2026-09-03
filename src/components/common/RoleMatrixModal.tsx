@@ -18,14 +18,14 @@ export const RoleMatrixModal: React.FC = () => {
   const { isRoleMatrixModalOpen, setIsRoleMatrixModalOpen, currentUser, setCurrentUser, users } = useAudit();
   const [highlightRole, setHighlightRole] = useState<UserRole>(currentUser.role);
 
-  if (!isRoleMatrixModalOpen || currentUser.role !== "Admin") return null;
+  if (!isRoleMatrixModalOpen || (currentUser.role !== "Admin" && currentUser.role !== "Platform Admin")) return null;
 
   const rolesList: { role: UserRole; title: string; color: string; desc: string }[] = [
     {
-      role: "Admin",
-      title: "System Admin",
+      role: "Platform Admin",
+      title: "Platform Admin",
       color: "bg-purple-100 text-purple-800 border-purple-300",
-      desc: "Full system administration, subscriber management, global compliance & analytics",
+      desc: "Full system administration, auditing firm governance, global compliance, templates & analytics",
     },
     {
       role: "Company Admin",
@@ -240,8 +240,8 @@ export const RoleMatrixModal: React.FC = () => {
                   <th className="p-4 w-48 bg-slate-950 font-bold tracking-tight text-slate-200 text-sm">
                     Module / Feature
                   </th>
-                  <th className={`p-3.5 text-center transition-colors ${highlightRole === "Admin" ? "bg-indigo-900 text-white font-bold ring-2 ring-indigo-400" : ""}`}>
-                    Admin
+                  <th className={`p-3.5 text-center transition-colors ${highlightRole === "Platform Admin" || highlightRole === "Admin" ? "bg-indigo-900 text-white font-bold ring-2 ring-indigo-400" : ""}`}>
+                    Platform Admin
                   </th>
                   <th className={`p-3.5 text-center transition-colors ${highlightRole === "Company Admin" ? "bg-indigo-900 text-white font-bold ring-2 ring-indigo-400" : ""}`}>
                     Company Admin
@@ -271,8 +271,8 @@ export const RoleMatrixModal: React.FC = () => {
                     <td className="p-4 font-bold text-slate-900 bg-slate-50/70 text-sm">
                       {row.module}
                     </td>
-                    <td className={`p-3.5 text-center ${highlightRole === "Admin" ? "bg-indigo-50/60 font-medium" : ""}`}>
-                      {renderBadge(row.admin, highlightRole === "Admin")}
+                    <td className={`p-3.5 text-center ${highlightRole === "Platform Admin" || highlightRole === "Admin" ? "bg-indigo-50/60 font-medium" : ""}`}>
+                      {renderBadge(row.admin, highlightRole === "Platform Admin" || highlightRole === "Admin")}
                     </td>
                     <td className={`p-3.5 text-center ${highlightRole === "Company Admin" ? "bg-indigo-50/60 font-medium" : ""}`}>
                       {renderBadge(row.companyAdmin, highlightRole === "Company Admin")}

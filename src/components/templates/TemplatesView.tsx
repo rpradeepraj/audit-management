@@ -379,10 +379,8 @@ export const TemplatesView: React.FC<TemplatesViewProps> = () => {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   <th className="py-3 px-4">Standard Code</th>
-                  <th className="py-3 px-4">Template Title & Overview</th>
-                  <th className="py-3 px-4">Industry / Domain</th>
+                  <th className="py-3 px-4">Template Title</th>
                   <th className="py-3 px-4 text-center">Sections & Clauses</th>
-                  <th className="py-3 px-4 text-center">Passing Score</th>
                   <th className="py-3 px-4">Category</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -409,22 +407,12 @@ export const TemplatesView: React.FC<TemplatesViewProps> = () => {
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
-                        {tmpl.industry}
-                      </td>
-
                       <td className="py-3.5 px-4 text-center whitespace-nowrap">
                         <span className="font-bold text-slate-800">
-                          {tmpl.sections.length}
+                          {tmpl.sections.length} Sections
                         </span>
                         <span className="text-slate-400 text-xs ml-1">
-                          ({questionsCount} items)
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                        <span className="font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full text-xs">
-                          {tmpl.passingScore}%
+                          ({questionsCount} Clauses)
                         </span>
                       </td>
 
@@ -534,12 +522,7 @@ export const TemplatesView: React.FC<TemplatesViewProps> = () => {
                     </p>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 font-medium">
-                    <span>{tmpl.industry}</span>
-                    <span>Pass: <strong className="text-emerald-700">{tmpl.passingScore}%</strong></span>
-                  </div>
-
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-[11px] text-slate-400 pt-2 border-t border-slate-100">
                     {tmpl.sections.length} Sections • {questionsCount} Checklist Clauses
                   </div>
                 </div>

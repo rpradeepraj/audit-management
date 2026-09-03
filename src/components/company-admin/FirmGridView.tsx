@@ -98,45 +98,20 @@ export const FirmGridView: React.FC<FirmGridViewProps> = ({
                   className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                     firm.status === "Active"
                       ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : firm.status === "Pending Accreditation"
-                      ? "bg-amber-50 text-amber-700 border border-amber-200"
-                      : "bg-rose-50 text-rose-700 border border-rose-200"
+                      : "bg-amber-50 text-amber-700 border border-amber-200"
                   }`}
                 >
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
-                      firm.status === "Active"
-                        ? "bg-emerald-500"
-                        : firm.status === "Pending Accreditation"
-                        ? "bg-amber-500"
-                        : "bg-rose-500"
+                      firm.status === "Active" ? "bg-emerald-500" : "bg-amber-500"
                     }`}
                   />
                   <span>{firm.status || "Active"}</span>
                 </span>
               </div>
 
-              {/* Accreditation Credentials */}
-              <div className="mt-4 p-3 bg-slate-50/90 rounded-xl border border-slate-100 space-y-1.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 flex items-center gap-1.5 font-medium text-[11px]">
-                    <Award className="w-3.5 h-3.5 text-amber-500" />
-                    Accreditation #:
-                  </span>
-                  <span className="font-mono font-bold text-slate-900 text-[11px]">
-                    {firm.accreditationNumber || "Pending"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 font-medium text-[11px]">Standard:</span>
-                  <span className="font-semibold text-slate-700 text-right truncate max-w-[190px] text-[11px]">
-                    {firm.accreditationStandard}
-                  </span>
-                </div>
-              </div>
-
               {/* Industry Scope */}
-              <p className="mt-3 text-xs text-slate-600 line-clamp-2 leading-relaxed">
+              <p className="mt-4 text-xs text-slate-600 line-clamp-2 leading-relaxed">
                 {firm.industryScope || "General Quality & Conformity Assessment Surveillance"}
               </p>
 

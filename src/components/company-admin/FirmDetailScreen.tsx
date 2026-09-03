@@ -417,7 +417,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <Award className="w-4 h-4 text-indigo-600" />
-                  <span>Accreditation & Corporate Specifications</span>
+                  <span>Corporate Specifications & Governance</span>
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Dynamic governance profile for {firm.name}. Changes apply immediately across all audits.
@@ -466,64 +466,6 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                     className="w-full px-3 py-2 text-xs font-mono uppercase bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Accreditation Number
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={profileForm.accreditationNumber}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        accreditationNumber: e.target.value,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Accreditation Status
-                  </label>
-                  <select
-                    value={profileForm.status || "Active"}
-                    onChange={(e) =>
-                      setProfileForm({
-                        ...profileForm,
-                        status: e.target.value as any,
-                      })
-                    }
-                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white font-medium"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Pending Accreditation">Pending Accreditation</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Accreditation Standard
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={profileForm.accreditationStandard}
-                  onChange={(e) =>
-                    setProfileForm({
-                      ...profileForm,
-                      accreditationStandard: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
-                />
               </div>
 
               <div>
@@ -577,7 +519,24 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Corporate Headquarters Address
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.address}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        address: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Official Website
@@ -594,7 +553,9 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                     className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
                     Established Year
@@ -660,7 +621,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
           <div className="space-y-4">
             <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-xs border border-slate-800">
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-                Accreditation Seal
+                Firm Identity Profile
               </h4>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 flex items-center justify-center font-black text-lg">
@@ -668,8 +629,8 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                 </div>
                 <div>
                   <h5 className="font-bold text-sm text-white">{firm.name}</h5>
-                  <span className="text-xs text-slate-400 font-mono">
-                    {firm.accreditationNumber}
+                  <span className="text-xs text-indigo-300 font-mono font-bold">
+                    {firm.code}
                   </span>
                 </div>
               </div>
@@ -832,7 +793,6 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                   <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="py-3 px-4">User Member</th>
                     <th className="py-3 px-4">Assigned Role</th>
-                    <th className="py-3 px-4">Department</th>
                     <th className="py-3 px-4">Contact Phone</th>
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4 text-right">Actions</th>
@@ -841,7 +801,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                 <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-10 text-center text-slate-400">
+                      <td colSpan={5} className="py-10 text-center text-slate-400">
                         <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                         <p className="font-semibold text-slate-600">No users currently assigned</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">
@@ -879,10 +839,6 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                             <ShieldCheck className="w-3 h-3" />
                             <span>{user.role}</span>
                           </span>
-                        </td>
-
-                        <td className="py-3.5 px-4 text-slate-600">
-                          {user.department || "Quality & Compliance"}
                         </td>
 
                         <td className="py-3.5 px-4 font-mono text-[11px] text-slate-600">
@@ -987,12 +943,6 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <span className="text-slate-400 text-[11px]">Department:</span>
-                          <span className="font-semibold text-slate-700 text-[11px] truncate max-w-[160px]">
-                            {user.department || "Quality & Compliance"}
-                          </span>
-                        </div>
 
                         {user.phone && (
                           <div className="flex items-center justify-between">
@@ -1160,10 +1110,8 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                       <thead>
                         <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                           <th className="py-3.5 px-4">Standard Code</th>
-                          <th className="py-3.5 px-4">Template Title & Overview</th>
-                          <th className="py-3.5 px-4">Industry Scope</th>
+                          <th className="py-3.5 px-4">Template Title</th>
                           <th className="py-3.5 px-4">Clauses / Sections</th>
-                          <th className="py-3.5 px-4">Passing Score</th>
                           <th className="py-3.5 px-4">Status</th>
                           <th className="py-3.5 px-4 text-right">Actions</th>
                         </tr>
@@ -1183,16 +1131,8 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                               <td className="py-3.5 px-4 font-bold text-slate-900">
                                 {tmpl.title}
                               </td>
-                              <td className="py-3.5 px-4 text-slate-600">
-                                <span className="px-2 py-0.5 bg-slate-100 rounded-md font-medium text-slate-700">
-                                  {tmpl.industry}
-                                </span>
-                              </td>
                               <td className="py-3.5 px-4 text-slate-600 font-semibold">
                                 {tmpl.sections.length} Sec ({totalQuestions} Clauses)
-                              </td>
-                              <td className="py-3.5 px-4 font-bold text-emerald-600">
-                                {tmpl.passingScore}%
                               </td>
                               <td className="py-3.5 px-4">
                                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
@@ -1249,24 +1189,15 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                           {tmpl.description}
                         </p>
 
-                        <div className="mt-4 grid grid-cols-2 gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-                          <div>
-                            <span className="text-slate-400 block text-[10px]">Clauses / Sections</span>
-                            <span className="font-bold text-slate-800">
-                              {tmpl.sections.length} Sec ({totalQuestions} Clauses)
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-slate-400 block text-[10px]">Passing Threshold</span>
-                            <span className="font-bold text-emerald-600">{tmpl.passingScore}%</span>
-                          </div>
+                        <div className="mt-4 p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                          <span className="text-slate-400 block text-[10px]">Clauses / Sections</span>
+                          <span className="font-bold text-slate-800">
+                            {tmpl.sections.length} Sec ({totalQuestions} Clauses)
+                          </span>
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400 truncate max-w-[140px]">
-                          {tmpl.industry}
-                        </span>
+                      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end">
                         <button
                           onClick={() => toggleFirmTemplate(firm.id, tmpl.id)}
                           className="text-xs font-bold text-rose-600 hover:text-rose-800 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"

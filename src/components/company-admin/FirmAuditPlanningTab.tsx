@@ -715,20 +715,14 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
                     {audit.title}
                   </h3>
 
-                  {/* Auditee & Location */}
-                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <div className="flex items-center gap-1.5 text-slate-700 truncate">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="font-bold truncate">{audit.customerName}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-600 truncate">
-                      {audit.locationType === "Remote" ? (
-                        <Video className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      ) : (
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      )}
-                      <span className="truncate">{audit.facilityAddress || audit.location || "Main Site"}</span>
-                    </div>
+                  {/* Location and Schedule */}
+                  <div className="mt-3 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center gap-1.5 text-slate-600 truncate">
+                    {audit.locationType === "Remote" ? (
+                      <Video className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    ) : (
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    )}
+                    <span className="truncate">{audit.facilityAddress || audit.location || "Main Site"}</span>
                   </div>
 
                   {/* Schedule Details */}
@@ -750,18 +744,18 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
                     </div>
 
                     <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-                      <span>Standard: <strong className="text-slate-800">{audit.standard}</strong></span>
                       <span>Opening: <strong className="text-slate-700">{audit.openingMeetingTime || "09:30 AM"}</strong></span>
+                      <span>Closing: <strong className="text-slate-700">{audit.closingMeetingTime || "04:30 PM"}</strong></span>
                     </div>
 
                     {/* Lead Auditor Badge */}
                     <div className="flex items-center justify-between pt-1">
                       <div className="flex items-center gap-1.5">
                         <div className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-[10px]">
-                          {audit.leadAuditorName.charAt(0)}
+                          {audit.leadAuditorName?.charAt(0) || "L"}
                         </div>
-                        <span className="text-[11px] font-bold text-slate-800">
-                          Lead: {audit.leadAuditorName}
+                        <span className="text-xs font-semibold text-slate-700">
+                          {audit.leadAuditorName || "Certified Auditor"}
                         </span>
                       </div>
 
@@ -818,7 +812,7 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
                     <button
                       onClick={() => sendScheduleReminder(audit.id)}
                       className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
-                      title="Send schedule notification reminder to auditee"
+                      title="Send schedule notification reminder"
                     >
                       <Send className="w-3.5 h-3.5" />
                     </button>
@@ -844,8 +838,6 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                   <th className="py-3 px-4">Audit Engagement</th>
-                  <th className="py-3 px-4">Auditee Client</th>
-                  <th className="py-3 px-4">Standard & Framework</th>
                   <th className="py-3 px-4">Lead Auditor</th>
                   <th className="py-3 px-4">Scheduled Dates</th>
                   <th className="py-3 px-4">Status</th>
@@ -854,21 +846,10 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                 {filteredAudits.map((audit) => {
-                  const auditFirmObj = firms.find((f) => f.id === audit.firmId) || currentFirm;
                   return (
                     <tr key={audit.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3.5 px-4 font-bold text-slate-900">
                         {audit.title}
-                      </td>
-
-                      <td className="py-3.5 px-4 font-semibold text-slate-800">
-                        {audit.customerName}
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded">
-                          {audit.standard}
-                        </span>
                       </td>
 
                       <td className="py-3.5 px-4 font-semibold text-slate-800">
@@ -1455,22 +1436,14 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-200/60 text-[11px]">
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Auditee</span>
-                    <strong className="text-slate-800">{selectedAuditForDossier.customerName}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Standard</span>
-                    <strong className="text-indigo-700">{selectedAuditForDossier.standard}</strong>
-                  </div>
+                <div className="pt-2 border-t border-slate-200/60 text-[11px] flex items-center justify-between">
                   <div>
                     <span className="text-slate-400 block text-[10px]">Lead Auditor</span>
                     <strong className="text-slate-800">{selectedAuditForDossier.leadAuditorName}</strong>
                   </div>
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">Managing Body</span>
-                    <strong className="text-slate-800">{currentFirm.code}</strong>
+                  <div className="text-right">
+                    <span className="text-slate-400 block text-[10px]">Engagement Status</span>
+                    <strong className="text-emerald-700">{selectedAuditForDossier.status}</strong>
                   </div>
                 </div>
               </div>

@@ -41,7 +41,6 @@ export const FirmTableView: React.FC<FirmTableViewProps> = ({
           <thead>
             <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <th className="py-3.5 px-4">Audit Firm & Code</th>
-              <th className="py-3.5 px-4">Accreditation Credentials</th>
               <th className="py-3.5 px-4">Status</th>
               <th className="py-3.5 px-4">Assigned Staff</th>
               <th className="py-3.5 px-4">Assigned Templates</th>
@@ -52,7 +51,7 @@ export const FirmTableView: React.FC<FirmTableViewProps> = ({
           <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
             {firms.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-400">
+                <td colSpan={6} className="py-12 text-center text-slate-400">
                   <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="font-semibold text-slate-600">No audit firms found</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
@@ -105,32 +104,18 @@ export const FirmTableView: React.FC<FirmTableViewProps> = ({
                       </div>
                     </td>
 
-                    {/* Accreditation */}
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1 font-mono font-bold text-slate-800 text-[11px]">
-                        <Award className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                        <span>{firm.accreditationNumber || "Pending"}</span>
-                      </div>
-                    </td>
-
                     {/* Status */}
                     <td className="py-3.5 px-4">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           firm.status === "Active"
                             ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : firm.status === "Pending Accreditation"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-rose-50 text-rose-700 border border-rose-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
-                            firm.status === "Active"
-                              ? "bg-emerald-500"
-                              : firm.status === "Pending Accreditation"
-                              ? "bg-amber-500"
-                              : "bg-rose-500"
+                            firm.status === "Active" ? "bg-emerald-500" : "bg-amber-500"
                           }`}
                         />
                         <span>{firm.status || "Active"}</span>

@@ -1411,32 +1411,17 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Department / Practice Area
-                  </label>
-                  <input
-                    type="text"
-                    value={userDepartment}
-                    onChange={(e) => setUserDepartment(e.target.value)}
-                    placeholder="e.g. Life Sciences & GMP Practice"
-                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Phone Contact
-                  </label>
-                  <input
-                    type="text"
-                    value={userPhone}
-                    onChange={(e) => setUserPhone(e.target.value)}
-                    placeholder="+1 (555) 234-5678"
-                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Phone Contact
+                </label>
+                <input
+                  type="text"
+                  value={userPhone}
+                  onChange={(e) => setUserPhone(e.target.value)}
+                  placeholder="+1 (555) 234-5678"
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white"
+                />
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
@@ -1650,46 +1635,18 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        Standard Code *
-                      </label>
-                      <input
-                        type="text"
-                        value={newCustomStandard}
-                        onChange={(e) => setNewCustomStandard(e.target.value)}
-                        placeholder="e.g. SC-SEC-2026"
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl font-mono font-bold text-indigo-700 focus:outline-none focus:border-indigo-500 shadow-2xs"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        Industry / Domain
-                      </label>
-                      <input
-                        type="text"
-                        value={newCustomIndustry}
-                        onChange={(e) => setNewCustomIndustry(e.target.value)}
-                        placeholder="e.g. Supply Chain & IT"
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-indigo-500 shadow-2xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                        Passing Score (%)
-                      </label>
-                      <input
-                        type="number"
-                        min={50}
-                        max={100}
-                        value={newCustomPassingScore}
-                        onChange={(e) => setNewCustomPassingScore(Number(e.target.value))}
-                        className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl font-bold text-emerald-700 focus:outline-none focus:border-indigo-500 shadow-2xs"
-                        required
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      Standard Code *
+                    </label>
+                    <input
+                      type="text"
+                      value={newCustomStandard}
+                      onChange={(e) => setNewCustomStandard(e.target.value)}
+                      placeholder="e.g. SC-SEC-2026"
+                      className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl font-mono font-bold text-indigo-700 focus:outline-none focus:border-indigo-500 shadow-2xs"
+                      required
+                    />
                   </div>
                 </div>
 

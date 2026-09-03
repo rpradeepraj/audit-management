@@ -953,238 +953,6 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
             </div>
 
             <form onSubmit={handleSaveAuditPlan} className="space-y-4">
-              {/* Firm Selection Selector */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Managing Audit Firm *</span>
-                  </label>
-                  <span className="text-[11px] text-slate-500 font-semibold">
-                    Accreditation #{modalTargetFirm.accreditationNumber}
-                  </span>
-                </div>
-                <select
-                  value={formFirmId}
-                  onChange={(e) => setFormFirmId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500 font-bold text-slate-800 shadow-2xs"
-                >
-                  {firms.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name} ({f.code}) — {f.status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Customer and Standard Selection */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Auditee Client Organization *
-                  </label>
-                  <select
-                    required
-                    value={formCustomerId}
-                    onChange={(e) => {
-                      const custId = e.target.value;
-                      setFormCustomerId(custId);
-                      const c = customers.find((x) => x.id === custId);
-                      if (c) {
-                        setFormFacilityAddress(c.address);
-                        const selTmpls = templates.filter((t) => formTemplateIds.includes(t.id));
-                        const standardsStr = selTmpls.length > 0
-                          ? selTmpls.map((t) => t.standard).join(" + ")
-                          : "ISO 9001:2015";
-                        setFormTitle(`${c.name} – ${modalTargetFirm.code} ${standardsStr} Surveillance Engagement`);
-                      }
-                    }}
-                    className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium"
-                  >
-                    {customers.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.industry})
-                      </option>
-                    ))}
-                  </select>
-                  {formCustomerId && (
-                    <p className="text-[11px] text-slate-500 mt-1 truncate">
-                      Default Facility: {customers.find((c) => c.id === formCustomerId)?.address}
-                    </p>
-                  )}
-                </div>
-
-                {/* Multi-Select Audit Framework / Standard */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                      <FileSpreadsheet className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Audit Framework / Standard * (Multi-Select)</span>
-                    </label>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                      {formTemplateIds.length} Selected
-                    </span>
-                  </div>
-
-                  {/* Multi-Select Dropdown Trigger */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsFrameworkDropdownOpen((prev) => !prev);
-                        setIsAuditorDropdownOpen(false);
-                      }}
-                      className="w-full min-h-[42px] px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-left flex items-center justify-between gap-2 hover:bg-slate-100/80 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                        {formTemplateIds.length === 0 ? (
-                          <span className="text-slate-400">Select one or multiple audit standards...</span>
-                        ) : (
-                          <span className="text-slate-800 font-semibold truncate">
-                            {templates
-                              .filter((t) => formTemplateIds.includes(t.id))
-                              .map((t) => t.standard)
-                              .join(", ")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
-                        <span className="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded">
-                          {formTemplateIds.length}
-                        </span>
-                        <ChevronDown className={`w-4 h-4 transition-transform ${isFrameworkDropdownOpen ? "rotate-180" : ""}`} />
-                      </div>
-                    </button>
-
-                    {/* Dropdown Popover */}
-                    {isFrameworkDropdownOpen && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 space-y-2 max-h-72 overflow-y-auto">
-                        {/* Search inside dropdown */}
-                        <div className="relative">
-                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            placeholder="Search standards (e.g. ISO 9001, GMP, SOC 2)..."
-                            value={frameworkSearchQuery}
-                            onChange={(e) => setFrameworkSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
-
-                        {/* Quick select buttons */}
-                        <div className="flex items-center justify-between pt-1 pb-1 border-b border-slate-100 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const maintainedIds = templates
-                                .filter((t) => modalFirmMaintainedTemplateIds.includes(t.id))
-                                .map((t) => t.id);
-                              if (maintainedIds.length > 0) {
-                                setFormTemplateIds(maintainedIds);
-                                setFormTemplateId(maintainedIds[0]);
-                                const c = customers.find((x) => x.id === formCustomerId);
-                                if (c) {
-                                  const selTmpls = templates.filter((t) => maintainedIds.includes(t.id));
-                                  const standardsStr = selTmpls.map((t) => t.standard).join(" + ");
-                                  setFormTitle(`${c.name} – ${modalTargetFirm.code} ${standardsStr} Surveillance Engagement`);
-                                }
-                              }
-                            }}
-                            className="text-indigo-600 hover:text-indigo-800 font-bold cursor-pointer"
-                          >
-                            Select All {modalTargetFirm.code} Standards
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormTemplateIds([]);
-                              setFormTemplateId("");
-                            }}
-                            className="text-slate-400 hover:text-slate-600 font-semibold cursor-pointer"
-                          >
-                            Clear All
-                          </button>
-                        </div>
-
-                        {/* Options list */}
-                        <div className="space-y-1">
-                          {templates
-                            .filter((t) => {
-                              if (!frameworkSearchQuery) return true;
-                              return (
-                                t.standard.toLowerCase().includes(frameworkSearchQuery.toLowerCase()) ||
-                                t.title.toLowerCase().includes(frameworkSearchQuery.toLowerCase()) ||
-                                t.industry.toLowerCase().includes(frameworkSearchQuery.toLowerCase())
-                              );
-                            })
-                            .map((t) => {
-                              const isSelected = formTemplateIds.includes(t.id);
-                              const isMaintained = modalFirmMaintainedTemplateIds.includes(t.id);
-                              return (
-                                <div
-                                  key={t.id}
-                                  onClick={() => toggleFormTemplate(t.id)}
-                                  className={`p-2 rounded-lg flex items-start gap-2.5 cursor-pointer transition-colors ${
-                                    isSelected ? "bg-indigo-50/80 border border-indigo-200" : "hover:bg-slate-50 border border-transparent"
-                                  }`}
-                                >
-                                  <div
-                                    className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center text-xs shrink-0 border ${
-                                      isSelected
-                                        ? "bg-indigo-600 border-indigo-600 text-white"
-                                        : "border-slate-300 bg-white"
-                                    }`}
-                                  >
-                                    {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="font-bold text-xs text-slate-900">{t.standard}</span>
-                                      {isMaintained && (
-                                        <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700">
-                                          Maintained by {modalTargetFirm.code}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-[11px] text-slate-500 truncate">{t.title}</div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Selected Framework Badges / Chips */}
-                  {formTemplateIds.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {templates
-                        .filter((t) => formTemplateIds.includes(t.id))
-                        .map((t) => (
-                          <span
-                            key={t.id}
-                            className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-800 text-[11px] font-bold shadow-2xs"
-                          >
-                            <span>{t.standard}</span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFormTemplate(t.id);
-                              }}
-                              className="text-indigo-400 hover:text-indigo-700 hover:bg-indigo-200/60 rounded p-0.5 transition-colors cursor-pointer"
-                              title={`Remove ${t.standard}`}
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* Title & Audit Type */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2">
@@ -1220,179 +988,161 @@ export const FirmAuditPlanningTab: React.FC<FirmAuditPlanningTabProps> = ({
                 </div>
               </div>
 
-              {/* Multi-Select Certified Lead Auditor & Recurrence */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Certified Lead Auditor ({modalTargetFirm.code}) * (Multi-Select)</span>
-                    </label>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {formLeadAuditorIds.length} Selected
-                    </span>
-                  </div>
+              {/* Multi-Select Certified Lead Auditor */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Certified Lead Auditor ({modalTargetFirm.code}) * (Multi-Select)</span>
+                  </label>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    {formLeadAuditorIds.length} Selected
+                  </span>
+                </div>
 
-                  {/* Multi-Select Dropdown Trigger */}
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsAuditorDropdownOpen((prev) => !prev);
-                        setIsFrameworkDropdownOpen(false);
-                      }}
-                      className="w-full min-h-[42px] px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-left flex items-center justify-between gap-2 hover:bg-slate-100/80 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                        {formLeadAuditorIds.length === 0 ? (
-                          <span className="text-slate-400">Select certified lead auditors...</span>
-                        ) : (
-                          <span className="text-slate-800 font-semibold truncate">
-                            {users
-                              .filter((u) => formLeadAuditorIds.includes(u.id))
-                              .map((u) => u.name)
-                              .join(", ")}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
-                        <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded">
-                          {formLeadAuditorIds.length}
+                {/* Multi-Select Dropdown Trigger */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAuditorDropdownOpen((prev) => !prev);
+                      setIsFrameworkDropdownOpen(false);
+                    }}
+                    className="w-full min-h-[42px] px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-left flex items-center justify-between gap-2 hover:bg-slate-100/80 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                      {formLeadAuditorIds.length === 0 ? (
+                        <span className="text-slate-400">Select certified lead auditors...</span>
+                      ) : (
+                        <span className="text-slate-800 font-semibold truncate">
+                          {users
+                            .filter((u) => formLeadAuditorIds.includes(u.id))
+                            .map((u) => u.name)
+                            .join(", ")}
                         </span>
-                        <ChevronDown className={`w-4 h-4 transition-transform ${isAuditorDropdownOpen ? "rotate-180" : ""}`} />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
+                      <span className="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded">
+                        {formLeadAuditorIds.length}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${isAuditorDropdownOpen ? "rotate-180" : ""}`} />
+                    </div>
+                  </button>
+
+                  {/* Dropdown Popover */}
+                  {isAuditorDropdownOpen && (
+                    <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 space-y-2 max-h-72 overflow-y-auto">
+                      {/* Search inside dropdown */}
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Search certified auditor by name, role..."
+                          value={auditorSearchQuery}
+                          onChange={(e) => setAuditorSearchQuery(e.target.value)}
+                          className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                        />
                       </div>
-                    </button>
 
-                    {/* Dropdown Popover */}
-                    {isAuditorDropdownOpen && (
-                      <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white border border-slate-200 rounded-xl shadow-xl p-3 space-y-2 max-h-72 overflow-y-auto">
-                        {/* Search inside dropdown */}
-                        <div className="relative">
-                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                          <input
-                            type="text"
-                            placeholder="Search certified auditor by name, role..."
-                            value={auditorSearchQuery}
-                            onChange={(e) => setAuditorSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
-                          />
-                        </div>
+                      {/* Quick select buttons */}
+                      <div className="flex items-center justify-between pt-1 pb-1 border-b border-slate-100 text-[11px]">
+                        <span className="text-slate-500 font-medium">Eligible Auditors under {modalTargetFirm.code}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormLeadAuditorIds([]);
+                            setFormLeadAuditorId("");
+                          }}
+                          className="text-slate-400 hover:text-slate-600 font-semibold cursor-pointer"
+                        >
+                          Clear All
+                        </button>
+                      </div>
 
-                        {/* Quick select buttons */}
-                        <div className="flex items-center justify-between pt-1 pb-1 border-b border-slate-100 text-[11px]">
-                          <span className="text-slate-500 font-medium">Eligible Auditors under {modalTargetFirm.code}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFormLeadAuditorIds([]);
-                              setFormLeadAuditorId("");
-                            }}
-                            className="text-slate-400 hover:text-slate-600 font-semibold cursor-pointer"
-                          >
-                            Clear All
-                          </button>
-                        </div>
-
-                        {/* Options list */}
-                        <div className="space-y-1">
-                          {eligibleLeadAuditors
-                            .filter((u) => {
-                              if (!auditorSearchQuery) return true;
-                              return (
-                                u.name.toLowerCase().includes(auditorSearchQuery.toLowerCase()) ||
-                                u.role.toLowerCase().includes(auditorSearchQuery.toLowerCase()) ||
-                                (u.department && u.department.toLowerCase().includes(auditorSearchQuery.toLowerCase()))
-                              );
-                            })
-                            .map((u) => {
-                              const isSelected = formLeadAuditorIds.includes(u.id);
-                              return (
+                      {/* Options list */}
+                      <div className="space-y-1">
+                        {eligibleLeadAuditors
+                          .filter((u) => {
+                            if (!auditorSearchQuery) return true;
+                            return (
+                              u.name.toLowerCase().includes(auditorSearchQuery.toLowerCase()) ||
+                              u.role.toLowerCase().includes(auditorSearchQuery.toLowerCase()) ||
+                              (u.department && u.department.toLowerCase().includes(auditorSearchQuery.toLowerCase()))
+                            );
+                          })
+                          .map((u) => {
+                            const isSelected = formLeadAuditorIds.includes(u.id);
+                            return (
+                              <div
+                                key={u.id}
+                                onClick={() => toggleFormLeadAuditor(u.id)}
+                                className={`p-2 rounded-lg flex items-center gap-2.5 cursor-pointer transition-colors ${
+                                  isSelected ? "bg-emerald-50/80 border border-emerald-200" : "hover:bg-slate-50 border border-transparent"
+                                }`}
+                              >
                                 <div
-                                  key={u.id}
-                                  onClick={() => toggleFormLeadAuditor(u.id)}
-                                  className={`p-2 rounded-lg flex items-center gap-2.5 cursor-pointer transition-colors ${
-                                    isSelected ? "bg-emerald-50/80 border border-emerald-200" : "hover:bg-slate-50 border border-transparent"
+                                  className={`w-4 h-4 rounded flex items-center justify-center text-xs shrink-0 border ${
+                                    isSelected
+                                      ? "bg-emerald-600 border-emerald-600 text-white"
+                                      : "border-slate-300 bg-white"
                                   }`}
                                 >
-                                  <div
-                                    className={`w-4 h-4 rounded flex items-center justify-center text-xs shrink-0 border ${
-                                      isSelected
-                                        ? "bg-emerald-600 border-emerald-600 text-white"
-                                        : "border-slate-300 bg-white"
-                                    }`}
-                                  >
-                                    {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                  {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                                </div>
+                                <img
+                                  src={u.avatar}
+                                  alt={u.name}
+                                  className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200 shrink-0"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="font-bold text-xs text-slate-900">{u.name}</span>
+                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
+                                      {u.role}
+                                    </span>
                                   </div>
-                                  <img
-                                    src={u.avatar}
-                                    alt={u.name}
-                                    className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200 shrink-0"
-                                  />
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                      <span className="font-bold text-xs text-slate-900">{u.name}</span>
-                                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
-                                        {u.role}
-                                      </span>
-                                    </div>
-                                    <div className="text-[11px] text-slate-400 truncate">
-                                      {u.department || modalTargetFirm.name} • {u.companyName || modalTargetFirm.name}
-                                    </div>
+                                  <div className="text-[11px] text-slate-400 truncate">
+                                    {u.department || modalTargetFirm.name} • {u.companyName || modalTargetFirm.name}
                                   </div>
                                 </div>
-                              );
-                            })}
-                        </div>
+                              </div>
+                            );
+                          })}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Selected Lead Auditors Badges / Chips */}
-                  {formLeadAuditorIds.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {users
-                        .filter((u) => formLeadAuditorIds.includes(u.id))
-                        .map((u, idx) => (
-                          <span
-                            key={u.id}
-                            className="inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-2xs"
-                          >
-                            <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center font-bold">
-                              {idx === 0 ? "L" : "C"}
-                            </span>
-                            <span>{u.name} {idx === 0 ? "(Lead)" : "(Co-Lead)"}</span>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFormLeadAuditor(u.id);
-                              }}
-                              className="text-emerald-400 hover:text-emerald-700 hover:bg-emerald-200/60 rounded p-0.5 transition-colors cursor-pointer"
-                              title={`Remove ${u.name}`}
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </span>
-                        ))}
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    Recurrence Cycle
-                  </label>
-                  <select
-                    value={formRecurrence}
-                    onChange={(e) => setFormRecurrence(e.target.value as ScheduleRecurrence)}
-                    className="w-full px-3 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium"
-                  >
-                    <option value="One-Time">One-Time Engagement</option>
-                    <option value="Quarterly">Quarterly</option>
-                    <option value="Semi-Annual">Semi-Annual</option>
-                    <option value="Annual Surveillance">Annual Surveillance</option>
-                  </select>
-                </div>
+                {/* Selected Lead Auditors Badges / Chips */}
+                {formLeadAuditorIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {users
+                      .filter((u) => formLeadAuditorIds.includes(u.id))
+                      .map((u, idx) => (
+                        <span
+                          key={u.id}
+                          className="inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-2xs"
+                        >
+                          <span className="w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] flex items-center justify-center font-bold">
+                            {idx === 0 ? "L" : "C"}
+                          </span>
+                          <span>{u.name} {idx === 0 ? "(Lead)" : "(Co-Lead)"}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFormLeadAuditor(u.id);
+                            }}
+                            className="text-emerald-400 hover:text-emerald-700 hover:bg-emerald-200/60 rounded p-0.5 transition-colors cursor-pointer"
+                            title={`Remove ${u.name}`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                  </div>
+                )}
               </div>
 
               {/* Dates and Times */}

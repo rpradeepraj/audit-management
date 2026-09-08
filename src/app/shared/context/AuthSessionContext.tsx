@@ -41,11 +41,18 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const [currentUser, setCurrentUser] = useState<User>(() => {
     if (typeof window === "undefined") return INITIAL_USERS[0];
+    const savedUserObj = localStorage.getItem("ams_current_user_object_v2");
+    if (savedUserObj) {
+      try {
+        const parsed = JSON.parse(savedUserObj);
+        if (parsed && parsed.id) return parsed;
+      } catch {}
+    }
     const savedId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
     const savedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
     const userPool: User[] = savedUsers ? JSON.parse(savedUsers) : INITIAL_USERS;
     const found = userPool.find((u) => u.id === savedId);
-    return found || INITIAL_USERS[0]; // Default: Victoria Sterling (Admin)
+    return found || INITIAL_USERS[0];
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -57,12 +64,21 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedAuth = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED);
-      const savedId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
       const isAuth = savedAuth === "true" || !!authService.getToken();
       setIsAuthenticated(isAuth);
-      if (savedId) {
-        const found = users.find((u) => u.id === savedId);
-        if (found) setCurrentUser(found);
+
+      const savedUserObj = localStorage.getItem("ams_current_user_object_v2");
+      if (savedUserObj) {
+        try {
+          const parsed = JSON.parse(savedUserObj);
+          if (parsed && parsed.id) setCurrentUser(parsed);
+        } catch {}
+      } else {
+        const savedId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
+        if (savedId) {
+          const found = users.find((u) => u.id === savedId);
+          if (found) setCurrentUser(found);
+        }
       }
       setIsInitialized(true);
     }
@@ -71,6 +87,7 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   useEffect(() => {
     if (typeof window !== "undefined" && isInitialized) {
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, currentUser.id);
+      localStorage.setItem("ams_current_user_object_v2", JSON.stringify(currentUser));
     }
   }, [currentUser, isInitialized]);
 
@@ -84,6 +101,11 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setCurrentUser(user);
     setIsAuthenticated(true);
     setActiveTab("dashboard");
+    if (typeof window !== "undefined") {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, user.id);
+      localStorage.setItem("ams_current_user_object_v2", JSON.stringify(user));
+      localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, "true");
+    }
     addAuditLog("User Authenticated", "User", user.id, `Signed in as ${user.name} (${user.role})`);
     addNotification("Welcome Back", `Signed in successfully as ${user.name} (${user.role}).`, "info");
   };
@@ -97,14 +119,18 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const authRes = await authService.login({ email: trimmed, password: cleanPassword });
       if (authRes.success && authRes.user) {
         const found = users.find((u) => u.email.toLowerCase() === trimmed || u.id === authRes.user.id);
-        const activeUser: User = found || {
+        const org = authRes.user.organization || authRes.user.firm;
+        const activeUser: User = {
           id: authRes.user.id || `usr_${Date.now()}`,
-          name: authRes.user.name || "Administrator",
+          name: authRes.user.name || found?.name || "Administrator",
           email: authRes.user.email || trimmed,
-          role: authRes.user.role || "Platform Admin",
-          avatar: authRes.user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          companyName: authRes.user.companyName || "Veritas Assurance Partners",
-          companyId: authRes.user.firm_id || "firm_veritas",
+          role: authRes.user.role || found?.role || "Platform Admin",
+          avatar: authRes.user.avatar || found?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+          companyName: authRes.user.companyName || org?.name || found?.companyName || "Veritas Assurance Partners",
+          companyId: authRes.user.firm_id || org?.id || found?.companyId || "firm_veritas",
+          organization: org,
+          firm: org,
+          phone: authRes.user.phone || found?.phone,
         };
         login(activeUser);
         return { success: true };

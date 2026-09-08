@@ -55,8 +55,48 @@ export const FirmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return cyber ? cyber.id : INITIAL_FIRMS[0].id;
   });
 
+  // Sync user's organization from Auth at render/mount time
+  useEffect(() => {
+    const userOrg = currentUser?.organization || currentUser?.firm;
+    const orgName = currentUser?.companyName || userOrg?.name;
+    const orgId = currentUser?.companyId || userOrg?.id;
+
+    if (orgName && orgId) {
+      setFirms((prev) => {
+        const existing = prev.find((f) => f.id === orgId || f.name.toLowerCase() === orgName.toLowerCase());
+        if (!existing) {
+          const newFirm: AuditFirm = {
+            id: orgId,
+            name: orgName,
+            code: userOrg?.code || orgName.substring(0, 4).toUpperCase(),
+            accreditationNumber: "ACC-2026-098",
+            accreditationStandard: "ISO/IEC 17021-1:2015",
+            industryScope: "Full Scope Global Assurance & Certification",
+            contactEmail: userOrg?.contact_email || currentUser.email || "governance@auditfirm.com",
+            phone: currentUser.phone || "+1 (800) 555-0199",
+            address: "Global Headquarters",
+            website: "https://www.auditfirm.com",
+            logoInitials: orgName.substring(0, 2).toUpperCase(),
+            establishedYear: "2018",
+            qualityPolicy: "Commitment to independence, technical rigor, and zero-defect auditing.",
+            status: "Active",
+            maintainedTemplateIds: ["tmpl_ind_mfg_9001", "tmpl_ind_tech_27001"],
+            createdAt: new Date().toISOString().split("T")[0],
+          };
+          return [newFirm, ...prev];
+        }
+        return prev;
+      });
+
+      setSelectedFirmId(orgId);
+    }
+  }, [currentUser]);
+
   const selectedFirm: AuditFirm =
-    firms.find((f) => f.id === selectedFirmId) || firms[0] || INITIAL_FIRMS[0];
+    firms.find((f) => f.id === selectedFirmId) ||
+    firms.find((f) => currentUser.companyName && f.name.toLowerCase() === currentUser.companyName.toLowerCase()) ||
+    firms[0] ||
+    INITIAL_FIRMS[0];
 
   const companyProfile: CompanyProfile = selectedFirm;
 

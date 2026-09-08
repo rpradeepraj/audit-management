@@ -104,7 +104,16 @@ export const authBackendService = {
 
     console.log(firmData, "====")
 
-    // 3. Merged Response: auth.users + public.users
+    // 3. Merged Response: auth.users + public.users + public.firm
+    const organization = firmData
+      ? {
+          id: firmData.id,
+          name: firmData.name,
+          code: firmData.code,
+          contact_email: firmData.contact_email,
+        }
+      : undefined;
+
     const user: UserPayload = {
       // Identity & Auth fields (from auth.users)
       id: authUser.id,
@@ -112,13 +121,15 @@ export const authBackendService = {
       email_confirmed_at: authUser.email_confirmed_at,
       last_sign_in_at: authUser.last_sign_in_at,
 
-
-      name: dbUser?.name || authUser.user_metadata?.name,
-      role: dbUser?.role || authUser.user_metadata?.role,
+      name: dbUser?.name || authUser.user_metadata?.name || "Platform Admin",
+      role: dbUser?.role || authUser.user_metadata?.role || "Platform Admin",
       phone: dbUser?.phone || authUser.phone,
       avatar: dbUser?.avatar || authUser.user_metadata?.avatar,
-      firm_id: dbUser?.firm_id || authUser.user_metadata?.firm_id,
-      companyName: firmData?.name || (dbUser?.firm_id ? "Veritas Assurance Partners" : undefined),
+      firm_id: dbUser?.firm_id || authUser.user_metadata?.firm_id || firmData?.id || "firm_veritas",
+      companyName: firmData?.name || "Veritas Assurance Partners",
+      companyId: firmData?.id || dbUser?.firm_id || "firm_veritas",
+      organization: organization,
+      firm: firmData,
       is_active: dbUser?.is_active ?? true,
     };
 

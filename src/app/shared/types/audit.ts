@@ -28,6 +28,7 @@ export interface User {
   avatar: string;
   companyName: string;
   companyId: string;
+  Organization?: string;
   organization?: {
     id: string;
     name: string;

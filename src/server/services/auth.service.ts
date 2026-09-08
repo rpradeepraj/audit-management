@@ -83,6 +83,7 @@ export const authBackendService = {
           firm_id,
           is_active,
           created_at,
+          Organization,
           firm:firm_id (
             id,
             name,
@@ -101,18 +102,18 @@ export const authBackendService = {
       // non-blocking fallback if public.users row is not yet created
     }
 
+    // 3. Merged Response: auth.users + public.users (with Organization)
+    const userOrgName =
+      dbUser?.Organization ||
+      dbUser?.organization ||
+      firmData?.name;
 
-    console.log(firmData, "====")
-
-    // 3. Merged Response: auth.users + public.users + public.firm
-    const organization = firmData
-      ? {
-          id: firmData.id,
-          name: firmData.name,
-          code: firmData.code,
-          contact_email: firmData.contact_email,
-        }
-      : undefined;
+    const organization = {
+      id: dbUser?.firm_id || firmData?.id || "org_primary",
+      name: userOrgName,
+      code: firmData?.code || userOrgName.substring(0, 4).toUpperCase(),
+      contact_email: firmData?.contact_email || authUser.email,
+    };
 
     const user: UserPayload = {
       // Identity & Auth fields (from auth.users)
@@ -121,13 +122,14 @@ export const authBackendService = {
       email_confirmed_at: authUser.email_confirmed_at,
       last_sign_in_at: authUser.last_sign_in_at,
 
-      name: dbUser?.name || authUser.user_metadata?.name || "Platform Admin",
-      role: dbUser?.role || authUser.user_metadata?.role || "Platform Admin",
+      name: dbUser?.name || authUser.user_metadata?.name,
+      role: dbUser?.role || authUser.user_metadata?.role,
       phone: dbUser?.phone || authUser.phone,
       avatar: dbUser?.avatar || authUser.user_metadata?.avatar,
-      firm_id: dbUser?.firm_id || authUser.user_metadata?.firm_id || firmData?.id || "firm_veritas",
-      companyName: firmData?.name || "Veritas Assurance Partners",
-      companyId: firmData?.id || dbUser?.firm_id || "firm_veritas",
+      firm_id: dbUser?.firm_id || authUser.user_metadata?.firm_id || firmData?.id || "1",
+      companyName: userOrgName,
+      companyId: dbUser?.firm_id || firmData?.id || "1",
+      Organization: userOrgName,
       organization: organization,
       firm: firmData,
       is_active: dbUser?.is_active ?? true,

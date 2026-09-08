@@ -119,6 +119,7 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const authRes = await authService.login({ email: trimmed, password: cleanPassword });
       if (authRes.success && authRes.user) {
         const found = users.find((u) => u.email.toLowerCase() === trimmed || u.id === authRes.user.id);
+        const orgName = authRes.user.Organization || authRes.user.companyName || authRes.user.organization?.name || "Bytesandbinaries";
         const org = authRes.user.organization || authRes.user.firm;
         const activeUser: User = {
           id: authRes.user.id || `usr_${Date.now()}`,
@@ -126,8 +127,9 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
           email: authRes.user.email || trimmed,
           role: authRes.user.role || found?.role || "Platform Admin",
           avatar: authRes.user.avatar || found?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          companyName: authRes.user.companyName || org?.name || found?.companyName || "Veritas Assurance Partners",
-          companyId: authRes.user.firm_id || org?.id || found?.companyId || "firm_veritas",
+          companyName: orgName,
+          Organization: orgName,
+          companyId: authRes.user.firm_id || org?.id || found?.companyId || "1",
           organization: org,
           firm: org,
           phone: authRes.user.phone || found?.phone,

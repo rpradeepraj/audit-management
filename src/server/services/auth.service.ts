@@ -67,9 +67,8 @@ export const authBackendService = {
 
     const authUser = authData.user;
 
-    // 2. Fetch linked profile from `public.users` and `public.firm`
+    // 2. Fetch profile from `public.users`
     let dbUser: any = null;
-    let firmData: any = null;
 
     try {
       const { data } = await supabaseAdmin
@@ -83,37 +82,23 @@ export const authBackendService = {
           firm_id,
           is_active,
           created_at,
-          Organization,
-          firm:firm_id (
-            id,
-            name,
-            code,
-            contact_email
-          )
+          Organization
         `)
         .eq("id", authUser.id)
         .maybeSingle();
 
       if (data) {
         dbUser = data;
-        firmData = data.firm;
       }
     } catch {
       // non-blocking fallback if public.users row is not yet created
     }
 
-    // 3. Merged Response: auth.users + public.users (with Organization)
+    // 3. Merged Response: auth.users + public.users (using user table Organization)
     const userOrgName =
       dbUser?.Organization ||
       dbUser?.organization ||
-      firmData?.name;
-
-    const organization = {
-      id: dbUser?.firm_id || firmData?.id || "org_primary",
-      name: userOrgName,
-      code: firmData?.code || userOrgName.substring(0, 4).toUpperCase(),
-      contact_email: firmData?.contact_email || authUser.email,
-    };
+      "Bytesandbinaries";
 
     const user: UserPayload = {
       // Identity & Auth fields (from auth.users)
@@ -122,16 +107,14 @@ export const authBackendService = {
       email_confirmed_at: authUser.email_confirmed_at,
       last_sign_in_at: authUser.last_sign_in_at,
 
-      name: dbUser?.name || authUser.user_metadata?.name,
-      role: dbUser?.role || authUser.user_metadata?.role,
+      name: dbUser?.name || authUser.user_metadata?.name || "Platform Admin",
+      role: dbUser?.role || authUser.user_metadata?.role || "Platform Admin",
       phone: dbUser?.phone || authUser.phone,
       avatar: dbUser?.avatar || authUser.user_metadata?.avatar,
-      firm_id: dbUser?.firm_id || authUser.user_metadata?.firm_id || firmData?.id || "1",
+      firm_id: dbUser?.firm_id || authUser.user_metadata?.firm_id || "1",
       companyName: userOrgName,
-      companyId: dbUser?.firm_id || firmData?.id || "1",
+      companyId: dbUser?.firm_id || "1",
       Organization: userOrgName,
-      organization: organization,
-      firm: firmData,
       is_active: dbUser?.is_active ?? true,
     };
 

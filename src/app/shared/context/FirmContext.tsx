@@ -57,22 +57,21 @@ export const FirmProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sync user's organization from Auth at render/mount time
   useEffect(() => {
-    const userOrg = currentUser?.organization || currentUser?.firm;
-    const orgName = currentUser?.companyName || userOrg?.name;
-    const orgId = currentUser?.companyId || userOrg?.id;
+    const orgName = currentUser?.Organization || currentUser?.companyName;
+    const orgId = currentUser?.companyId || "1";
 
-    if (orgName && orgId) {
+    if (orgName) {
       setFirms((prev) => {
         const existing = prev.find((f) => f.id === orgId || f.name.toLowerCase() === orgName.toLowerCase());
         if (!existing) {
           const newFirm: AuditFirm = {
             id: orgId,
             name: orgName,
-            code: userOrg?.code || orgName.substring(0, 4).toUpperCase(),
+            code: orgName.substring(0, 4).toUpperCase(),
             accreditationNumber: "ACC-2026-098",
             accreditationStandard: "ISO/IEC 17021-1:2015",
             industryScope: "Full Scope Global Assurance & Certification",
-            contactEmail: userOrg?.contact_email || currentUser.email || "governance@auditfirm.com",
+            contactEmail: currentUser.email || "governance@auditfirm.com",
             phone: currentUser.phone || "+1 (800) 555-0199",
             address: "Global Headquarters",
             website: "https://www.auditfirm.com",

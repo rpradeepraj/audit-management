@@ -44,8 +44,6 @@ export const UserPayloadSchema = z.object({
   firm_id: z.string().optional(),
   companyName: z.string().optional(),
   Organization: z.string().optional(),
-  organization: z.any().optional(),
-  firm: z.any().optional(),
   avatar: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   is_active: z.boolean().optional(),

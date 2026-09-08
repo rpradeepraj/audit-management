@@ -29,14 +29,6 @@ export interface User {
   companyName: string;
   companyId: string;
   Organization?: string;
-  organization?: {
-    id: string;
-    name: string;
-    code?: string;
-    contact_email?: string;
-    [key: string]: any;
-  };
-  firm?: AuditFirm | any;
   isCustomerUser?: boolean;
   department?: string;
   phone?: string;

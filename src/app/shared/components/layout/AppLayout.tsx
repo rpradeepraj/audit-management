@@ -9,17 +9,29 @@ import { NotificationDrawer } from "./NotificationDrawer";
 import { LogFindingModal } from "@/features/findings";
 import { AuthView } from "@/features/auth";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const { isAuthenticated, setActiveTab } = useAudit();
+  const { isAuthenticated, isInitialized, setActiveTab } = useAudit();
   const { themeStretch } = useSettingsContext();
   const router = useRouter();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLogFindingModalOpen, setIsLogFindingModalOpen] = useState(false);
+
+  if (!isInitialized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-slate-100">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+          <p className="text-xs text-slate-400 font-medium tracking-wide">Loading workspace...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <AuthView />;

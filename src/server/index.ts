@@ -4,7 +4,6 @@
  * - Controllers
  * - Services
  * - Schemas
- * - Routes
  * - Utilities
  * - Config
  */
@@ -13,5 +12,4 @@ export * from "./config";
 export * from "./schemas";
 export * from "./services";
 export * from "./controllers";
-export * from "./routes";
 export * from "./utils";

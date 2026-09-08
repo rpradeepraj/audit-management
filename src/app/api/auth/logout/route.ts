@@ -1,6 +1,6 @@
-import { authRoutes } from "@/server/routes";
+import { authController } from "@/server/controllers";
 
 /**
- * Route: /api/auth/logout
+ * POST /api/auth/logout
  */
-export const POST = authRoutes.logout;
+export const POST = authController.logout;

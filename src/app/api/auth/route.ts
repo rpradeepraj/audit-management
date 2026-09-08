@@ -1,7 +1,7 @@
-import { authRoutes } from "@/server/routes";
+import { authController } from "@/server/controllers";
 
 /**
  * Route: /api/auth
  */
-export const POST = authRoutes.login;
-export const GET = authRoutes.getMe;
+export const POST = authController.login;
+export const GET = authController.getMe;

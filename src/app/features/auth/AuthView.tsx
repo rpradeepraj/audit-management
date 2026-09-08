@@ -17,8 +17,15 @@ import { useRouter } from "next/navigation";
 import { APP_ROUTES } from "@/shared/routes";
 
 export const AuthView: React.FC = () => {
-  const { loginWithEmail } = useAudit();
+  const { loginWithEmail, isAuthenticated, isInitialized } = useAudit();
   const router = useRouter();
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isInitialized && isAuthenticated) {
+      router.replace(APP_ROUTES.DASHBOARD);
+    }
+  }, [isInitialized, isAuthenticated, router]);
 
   // Login form state - Admin credentials
   const [loginEmail, setLoginEmail] = useState("admin@auditfirm.com");

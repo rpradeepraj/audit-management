@@ -182,11 +182,11 @@ export const FirmTableView: React.FC<FirmTableViewProps> = ({
                       >
                         <button
                           onClick={() => onSelectFirm(firm.id)}
-                          className="px-2.5 py-1.5 text-xs font-bold text-indigo-600 hover:text-white hover:bg-indigo-600 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                          className="px-2.5 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50/60 hover:bg-indigo-600 hover:text-white rounded-lg transition-all flex items-center gap-1 cursor-pointer"
                           title="Open Detailed View Screen"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Details</span>
+                          <Eye className="w-3.5 h-3.5 shrink-0" />
+                          <span>Details</span>
                         </button>
                         <button
                           onClick={(e) => onEditFirm(firm, e)}

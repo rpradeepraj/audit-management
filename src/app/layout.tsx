@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuditProvider } from "@/shared/context";
+import ThemeRegistry from "@/theme/ThemeRegistry";
 
 export const metadata: Metadata = {
   title: "Audit Management System | Enterprise Multi-Tenant Platform",
@@ -13,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -22,8 +23,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-slate-100/70 text-slate-900">
-        <AuditProvider>{children}</AuditProvider>
+      <body className="antialiased bg-slate-100/70 text-slate-900 transition-colors duration-200">
+        <ThemeRegistry>
+          <AuditProvider>{children}</AuditProvider>
+        </ThemeRegistry>
       </body>
     </html>
   );

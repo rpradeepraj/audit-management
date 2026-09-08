@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useAudit } from "@/shared/context";
+import { useSettingsContext } from "@/components/settings";
 import { Header, Sidebar, NotificationDrawer } from "@/shared/components/layout";
 
 // Features
@@ -18,6 +19,7 @@ import { AuditTrailView } from "@/features/audit-trail";
 
 const MainLayout: React.FC = () => {
   const { activeTab, setActiveTab } = useAudit();
+  const { themeStretch } = useSettingsContext();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLogFindingModalOpen, setIsLogFindingModalOpen] = useState(false);
 
@@ -62,7 +64,9 @@ const MainLayout: React.FC = () => {
 
         {/* Dynamic Page Content */}
         <main className="flex-1 overflow-y-auto">
-          {renderActiveView()}
+          <div className={themeStretch ? "w-full" : "max-w-7xl mx-auto px-2 sm:px-4"}>
+            {renderActiveView()}
+          </div>
         </main>
       </div>
 

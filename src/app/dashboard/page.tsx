@@ -3,16 +3,8 @@
 import React from "react";
 import { AppLayout } from "@/shared/components/layout";
 import { DashboardView } from "@/features/dashboard";
-import { AuthView } from "@/features/auth";
-import { useAudit } from "@/shared/context";
 
-export default function HomePage() {
-  const { isAuthenticated } = useAudit();
-
-  if (!isAuthenticated) {
-    return <AuthView />;
-  }
-
+export default function DashboardPage() {
   return (
     <AppLayout>
       <DashboardView />

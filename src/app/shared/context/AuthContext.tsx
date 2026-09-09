@@ -25,9 +25,9 @@ export interface AuthContextType {
   logout: () => void;
   // User roster slice
   users: User[];
-  addUser: (user: Omit<User, "id">) => string;
-  updateUser: (id: string, updates: Partial<User>) => void;
-  deleteUser: (id: string) => void;
+  addUser: (user: Omit<User, "id"> & { password?: string; confirmPassword?: string; firmId?: string }) => Promise<string> | string;
+  updateUser: (id: string, updates: Partial<User> & { password?: string; confirmPassword?: string; firmId?: string }) => Promise<void> | void;
+  deleteUser: (id: string) => Promise<void> | void;
   addUserToFirm: (
     firmId: string,
     firmName: string,
@@ -35,11 +35,14 @@ export interface AuthContextType {
       name: string;
       email: string;
       role: UserRole;
+      password?: string;
+      confirmPassword?: string;
       department?: string;
       phone?: string;
       avatar?: string;
     }
-  ) => User;
+  ) => Promise<User> | User;
+  uploadAvatar?: (file: File | string) => Promise<string>;
   // Role catalog slice
   firmRoles: FirmRole[];
   addFirmRole: (role: Omit<FirmRole, "id" | "createdAt">) => string;

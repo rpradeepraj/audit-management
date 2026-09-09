@@ -40,7 +40,7 @@ export const ScheduleAuditModal: React.FC<ScheduleAuditModalProps> = ({
   const [scheduleNotes, setScheduleNotes] = useState("");
 
   const eligibleAuditors = users.filter((u) => {
-    const isFirmAuditor = u.role === "Auditor" || u.role === "Audit Manager" || u.role === "Platform Admin" || u.role === "Company Admin";
+    const isFirmAuditor = u.role === "Auditor" || u.role === "Audit Manager" || u.role === "Admin" || u.role === "Platform Admin" || u.role === "Company Admin";
     return isFirmAuditor;
   });
 

@@ -1,13 +1,16 @@
 export type UserRole =
-  | "Platform Admin"
   | "Admin"
-  | "Company Admin"
   | "Audit Manager"
   | "Auditor"
-  | "Customer Representative"
   | "Client Representative"
-  | "Customer Viewer"
   | string;
+
+export const ASSIGNED_ROLES = [
+  "Admin",
+  "Audit Manager",
+  "Auditor",
+  "Client Representative",
+] as const;
 
 export interface FirmRole {
   id: string;
@@ -25,7 +28,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  avatar: string;
+  avatar?: string;
   companyName: string;
   companyId: string;
   Organization?: string;
@@ -34,6 +37,7 @@ export interface User {
   phone?: string;
   status?: "Active" | "Inactive";
   joinedDate?: string;
+  firms?: Array<{ id: string; name: string; code: string }>;
 }
 
 export interface AuditFirm {
@@ -54,6 +58,7 @@ export interface AuditFirm {
   maintainedTemplateIds: string[];
   notes?: string;
   createdAt?: string;
+  assignedStaff?: User[];
 }
 
 export type CompanyProfile = AuditFirm;

@@ -95,9 +95,10 @@ export const AddCustomerUserModal: React.FC<AddCustomerUserModalProps> = ({
               className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
             >
-              <option value="Platform Admin">Platform Admin</option>
+              <option value="Admin">Admin</option>
               <option value="Audit Manager">Audit Manager</option>
               <option value="Auditor">Auditor</option>
+              <option value="Client Representative">Client Representative</option>
             </select>
           </div>
 

@@ -189,7 +189,41 @@ ON CONFLICT (id) DO UPDATE SET
 -- 3. GLOBAL TEMPLATE CATALOG (STANDARDS & CONTROLS)
 -- ----------------------------------------------------------------------------
 
--- 3.1 ISO 27001:2022 Information Security Management System
+-- 3.1 ISO 9001:2015 Quality Management System
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_iso9001',
+    'ISO-9001-2015',
+    'ISO 9001:2015 Quality Management System',
+    'ISO 9001:2015',
+    'Manufacturing & Industrial Engineering',
+    '2015.1',
+    80.00,
+    ARRAY['QMS', 'Quality', 'ISO 9001', 'Standard', 'Manufacturing'],
+    'International standard that specifies requirements for an enterprise quality management system (QMS).',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_iso9001_s4', 'gtmpl_iso9001', 'Clause 4: Context of the Organization', 'Understanding organization context, stakeholders, and QMS scope.', 20.00, 1),
+    ('gsec_iso9001_s5', 'gtmpl_iso9001', 'Clause 5: Leadership & Commitment', 'Leadership accountability, quality policy, and organizational roles.', 20.00, 2),
+    ('gsec_iso9001_s6', 'gtmpl_iso9001', 'Clause 6: Planning for the QMS', 'Actions to address risks and opportunities, quality objectives.', 20.00, 3),
+    ('gsec_iso9001_s7', 'gtmpl_iso9001', 'Clause 7: Support & Resources', 'Resources, competence, awareness, and documented information.', 20.00, 4),
+    ('gsec_iso9001_s8', 'gtmpl_iso9001', 'Clause 8: Operation & Execution', 'Operational planning, control, and nonconforming output management.', 20.00, 5)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_iso9001_41', 'gsec_iso9001_s4', 'ISO 9001: 4.1', 'Has the organization determined external and internal issues relevant to its purpose and strategic direction?', 'Review internal SWOT/PESTLE analysis and regular management review notes.', 'PASS_FAIL', 10.00, true, 1),
+    ('gq_iso9001_51', 'gsec_iso9001_s5', 'ISO 9001: 5.1.1', 'Does top management demonstrate leadership and commitment with respect to the QMS?', 'Check leadership interviews and evidence of resource allocation.', 'PASS_FAIL', 10.00, true, 1),
+    ('gq_iso9001_61', 'gsec_iso9001_s6', 'ISO 9001: 6.1.1', 'Are risks and opportunities addressed to give assurance that the QMS can achieve intended results?', 'Inspect risk assessment matrix and risk treatment plans.', 'PASS_FAIL', 10.00, true, 1),
+    ('gq_iso9001_75', 'gsec_iso9001_s7', 'ISO 9001: 7.5.3', 'Is documented information controlled to ensure it is available, suitable, and adequately protected?', 'Verify version control, distribution list, and approval stamps.', 'PASS_FAIL', 10.00, true, 1),
+    ('gq_iso9001_87', 'gsec_iso9001_s8', 'ISO 9001: 8.7.1', 'Does the organization ensure outputs that do not conform are identified and controlled?', 'Verify nonconformance quarantine areas, rejection logs, and disposition records.', 'PASS_FAIL', 10.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.2 ISO/IEC 27001:2022 Information Security Management System
 INSERT INTO public.global_templates (
     id, code, title, standard, industry, version, passing_score, tags, description, created_by
 ) VALUES (
@@ -197,7 +231,7 @@ INSERT INTO public.global_templates (
     'ISO-27001-2022',
     'ISO/IEC 27001:2022 Information Security Management System',
     'ISO/IEC 27001:2022',
-    'Information Technology / Cyber Security',
+    'Information Technology & Cloud Security',
     '2022.2',
     85.00,
     ARRAY['ISMS', 'Security', 'ISO 27001', 'Annex A', 'Cyber'],
@@ -220,7 +254,37 @@ VALUES
     ('gq_iso27001_812', 'gsec_iso27001_s8', 'ISO 27001: A.8.12', 'Are data leakage prevention (DLP) controls applied to sensitive data across endpoints and egress gateways?', 'Inspect endpoint DLP configurations, USB blocking policies, and cloud CASB policies.', 'PASS_FAIL', 15.00, true, 2)
 ON CONFLICT (id) DO NOTHING;
 
--- 3.2 EU & US FDA Good Manufacturing Practice (GMP)
+-- 3.3 AICPA SOC 2 Type II Security & Trust Principles
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_soc2',
+    'SOC2-TYPE-2',
+    'SOC 2 Type II Security & Compliance Checklist',
+    'AICPA SOC 2',
+    'Information Technology & Cloud Security',
+    '2024.1',
+    85.00,
+    ARRAY['SOC 2', 'Trust Principles', 'Security', 'Cloud', 'Zero Trust'],
+    'AICPA Trust Services Criteria for Security, Availability, Processing Integrity, and Confidentiality.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_soc2_cc6', 'gtmpl_soc2', 'CC6: Logical and Physical Access Controls', 'User access management, credential protection, and MFA.', 40.00, 1),
+    ('gsec_soc2_cc7', 'gtmpl_soc2', 'CC7: System Operations & Monitoring', 'Infrastructure vulnerability management and incident detection.', 30.00, 2),
+    ('gsec_soc2_cc8', 'gtmpl_soc2', 'CC8: Change Management & CI/CD Deployment', 'Authorized change tracking, pull request approvals, and automated testing.', 30.00, 3)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_soc2_cc61', 'gsec_soc2_cc6', 'SOC 2: CC6.1', 'Are logical access credentials and MFA enforced for all production system administrative access?', 'Inspect SSO configurations, IAM policies, and active privileged accounts.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_soc2_cc71', 'gsec_soc2_cc7', 'SOC 2: CC7.1', 'Are automated vulnerability scanners executed continuously with critical patches deployed within 14 days?', 'Review vulnerability reports and change management tickets.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_soc2_cc81', 'gsec_soc2_cc8', 'SOC 2: CC8.1', 'Do production code deployments require peer review, automated tests, and authorized approval before merge?', 'Inspect GitHub PR merge policies, protected branches, and deploy logs.', 'PASS_FAIL', 15.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.4 EU & US FDA Good Manufacturing Practice (GMP)
 INSERT INTO public.global_templates (
     id, code, title, standard, industry, version, passing_score, tags, description, created_by
 ) VALUES (
@@ -228,7 +292,7 @@ INSERT INTO public.global_templates (
     'EU-GMP-VOL4',
     'EU GMP Vol 4 & FDA 21 CFR 211 Good Manufacturing Practice',
     'EU GMP Vol 4 / 21 CFR Part 211',
-    'Pharmaceuticals & Biotechnology',
+    'Pharmaceuticals & Life Sciences',
     '2024.1',
     90.00,
     ARRAY['GMP', 'Pharma', 'Cleanroom', 'FDA', 'EU Vol 4', 'Sterility'],
@@ -250,7 +314,7 @@ VALUES
     ('gq_gmp_41', 'gsec_gmp_s4', 'GMP: 4.8', 'Are electronic batch manufacturing records (eBMR) fully compliant with 21 CFR Part 11 ALCOA+ principles?', 'Verify system audit trail review SOPs, unique logins, and non-modifiable audit logs.', 'PASS_FAIL', 20.00, true, 1)
 ON CONFLICT (id) DO NOTHING;
 
--- 3.3 ISO 14001:2015 Environmental Management Systems
+-- 3.5 ISO 14001:2015 Environmental Management Systems
 INSERT INTO public.global_templates (
     id, code, title, standard, industry, version, passing_score, tags, description, created_by
 ) VALUES (
@@ -258,7 +322,7 @@ INSERT INTO public.global_templates (
     'ISO-14001-2015',
     'ISO 14001:2015 Environmental Management System',
     'ISO 14001:2015',
-    'Environmental / Energy / Industrial',
+    'Energy, Oil, Gas & Utilities',
     '2015.1',
     80.00,
     ARRAY['EMS', 'Environmental', 'ISO 14001', 'Sustainability', 'Waste'],
@@ -276,6 +340,208 @@ INSERT INTO public.global_questions (id, global_section_id, requirement_id, ques
 VALUES
     ('gq_iso14001_612', 'gsec_iso14001_s6', 'ISO 14001: 6.1.2', 'Has the organization identified significant environmental aspects from a life cycle perspective?', 'Review aspects register, emission inventories, and risk scoring methodology.', 'PASS_FAIL', 15.00, true, 1),
     ('gq_iso14001_82', 'gsec_iso14001_s8', 'ISO 14001: 8.2', 'Are emergency preparedness procedures tested periodically for chemical spills and hazardous release?', 'Review drill reports, spill kit inspections, and local fire department coordination.', 'PASS_FAIL', 15.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.6 ISO 45001:2018 Occupational Health & Safety Management Systems
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_iso45001',
+    'ISO-45001-2018',
+    'ISO 45001:2018 Occupational Health & Safety Management System',
+    'ISO 45001:2018',
+    'Energy, Oil, Gas & Utilities',
+    '2018.1',
+    80.00,
+    ARRAY['OH&S', 'Safety', 'ISO 45001', 'Hazard Prevention', 'LOTO'],
+    'International standard providing a framework to improve employee safety, reduce workplace risks, and create safer working conditions.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_iso45001_s5', 'gtmpl_iso45001', 'Clause 5: Leadership & Worker Participation', 'Worker consultation, safety committee governance, and hazard refusal rights.', 30.00, 1),
+    ('gsec_iso45001_s6', 'gtmpl_iso45001', 'Clause 6: Hazard Identification & Risk Assessment', 'Job safety analysis, hierarchy of controls, and ergonomic assessments.', 40.00, 2),
+    ('gsec_iso45001_s8', 'gtmpl_iso45001', 'Clause 8: Operational Controls & LOTO Protocol', 'Lockout/Tagout (LOTO), hot work permits, and confined space safety.', 30.00, 3)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_iso45001_54', 'gsec_iso45001_s5', 'ISO 45001: 5.4', 'Are non-managerial workers actively consulted in hazard identification and OH&S committee meetings?', 'Verify safety committee meeting minutes and worker participation rosters.', 'PASS_FAIL', 10.00, true, 1),
+    ('gq_iso45001_61', 'gsec_iso45001_s6', 'ISO 45001: 6.1.2', 'Has a documented ongoing hazard identification process been established across all active worksites?', 'Inspect Job Hazard Analyses (JHA), incident databases, and risk scoring criteria.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_iso45001_81', 'gsec_iso45001_s8', 'ISO 45001: 8.1.3', 'Are energy isolation (LOTO) and high-risk permit-to-work protocols audited routinely for compliance?', 'Review active work permits, lockout padlock logs, and annual authorized worker training.', 'PASS_FAIL', 15.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.7 ISO 13485:2016 Medical Devices Quality Management System
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_iso13485',
+    'ISO-13485-2016',
+    'ISO 13485:2016 Medical Devices Quality Management System',
+    'ISO 13485:2016',
+    'Healthcare, Hospitals & Medical Devices',
+    '2016.2',
+    85.00,
+    ARRAY['ISO 13485', 'Medical Devices', 'Design Controls', 'Sterilization', 'MDR'],
+    'Harmonized quality management standard for organizations involved in the design, production, and lifecycle of medical devices.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_iso13485_s4', 'gtmpl_iso13485', 'Clause 4: Quality Manual & Medical Device Files (MDF)', 'Device master records, technical documentation, and regulatory submissions.', 30.00, 1),
+    ('gsec_iso13485_s7', 'gtmpl_iso13485', 'Clause 7: Design Controls & Product Realization', 'Design verification, clinical validation, risk analysis (ISO 14971), and sterilization.', 40.00, 2),
+    ('gsec_iso13485_s8', 'gtmpl_iso13485', 'Clause 8: Post-Market Surveillance & Vigilance', 'Adverse event reporting, complaint handling, and field safety corrective actions.', 30.00, 3)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_iso13485_42', 'gsec_iso13485_s4', 'ISO 13485: 4.2.3', 'Is a comprehensive Medical Device File (MDF) maintained for each device family showing regulatory conformity?', 'Inspect Device Master Records (DMR) and technical files for CE/FDA 510(k) clearances.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_iso13485_73', 'gsec_iso13485_s7', 'ISO 13485: 7.3.6', 'Are design verification and clinical evaluation data documented per ISO 14971 risk management principles?', 'Review Design History Files (DHF), risk analysis charts, and validation protocol signatures.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_iso13485_85', 'gsec_iso13485_s8', 'ISO 13485: 8.5.1', 'Are medical device customer complaints reviewed for adverse event reporting thresholds within regulatory deadlines?', 'Verify complaint logs, MDR/MDV report submissions, and escalation decision trees.', 'PASS_FAIL', 15.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.8 PCI-DSS v4.0 Payment Card Industry Data Security Standard
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_pci_dss',
+    'PCI-DSS-V4',
+    'PCI-DSS v4.0 Payment Card Security Framework',
+    'PCI-DSS v4.0',
+    'Banking, Fintech & Financial Services',
+    '4.0.1',
+    90.00,
+    ARRAY['PCI-DSS', 'Fintech', 'Cardholder Data', 'Encryption', 'Key Management'],
+    'Rigorous technical and operational requirements designed to protect cardholder and authentication data globally.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_pci_req3', 'gtmpl_pci_dss', 'Requirement 3: Protect Stored Account Data & Cryptography', 'Strong cryptography, key lifecycle management, and PAN tokenization.', 40.00, 1),
+    ('gsec_pci_req8', 'gtmpl_pci_dss', 'Requirement 8: Identity & MFA Access Authentication', 'Multi-factor authentication for CDE access and 90-day credential rotation.', 30.00, 2),
+    ('gsec_pci_req10', 'gtmpl_pci_dss', 'Requirement 10: Log and Monitor All Access to Network Resources', 'Centralized immutable SIEM audit logs and automated anomaly alerting.', 30.00, 3)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_pci_34', 'gsec_pci_req3', 'PCI-DSS: 3.4', 'Is Primary Account Number (PAN) rendered unreadable wherever it is stored using strong cryptography (AES-256)?', 'Verify database column encryption, HSM key hierarchy, and key custodian dual-control records.', 'PASS_FAIL', 20.00, true, 1),
+    ('gq_pci_83', 'gsec_pci_req8', 'PCI-DSS: 8.3', 'Is phishing-resistant Multi-Factor Authentication (MFA) required for all administrative access into the CDE?', 'Check IAM console configs, hardware token enforcement, and VPN MFA policies.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_pci_102', 'gsec_pci_req10', 'PCI-DSS: 10.2', 'Are automated audit trails generated for all access to cardholder data and retained for at least 12 months?', 'Audit SIEM retention policies, tamper-evident log stores, and daily log review checklists.', 'PASS_FAIL', 15.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.9 ISO 22000:2018 & HACCP Food Safety Management System
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_iso22000',
+    'ISO-22000-2018',
+    'ISO 22000:2018 & HACCP Food Safety Management System',
+    'ISO 22000:2018 / HACCP',
+    'Food Safety & Agriculture',
+    '2018.1',
+    85.00,
+    ARRAY['ISO 22000', 'HACCP', 'Food Safety', 'CCP', 'Allergen Control'],
+    'Comprehensive standard for organizations in the food chain to ensure food is safe at the time of human consumption.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_iso22000_s7', 'gtmpl_iso22000', 'Clause 7: Prerequisite Programs (PRPs) & Hygiene', 'Sanitation SOPs, pest control, personal hygiene, and water quality testing.', 40.00, 1),
+    ('gsec_iso22000_s8', 'gtmpl_iso22000', 'Clause 8: Hazard Control Plan (HACCP & CCPs)', 'Critical Control Points (CCP), critical limits, continuous temperature logging, and corrective actions.', 60.00, 2)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_iso22000_74', 'gsec_iso22000_s7', 'ISO 22000: 7.4.2', 'Are allergen cross-contact prevention protocols and dedicated utensil color-coding strictly maintained?', 'Inspect production line changeover swab tests, allergen labeling, and segregation barriers.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_iso22000_85', 'gsec_iso22000_s8', 'ISO 22000: 8.5.4', 'Are Critical Control Points (CCPs) monitored continuously with calibrated sensors and automatic deviation alarms?', 'Examine pasteurization thermograph logs, metal detector test logs, and hold/quarantine actions.', 'PASS_FAIL', 20.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.10 IATF 16949:2016 Automotive Quality Management System
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_iatf16949',
+    'IATF-16949-2016',
+    'IATF 16949:2016 Automotive Quality Management System',
+    'IATF 16949:2016',
+    'Automotive & Transportation',
+    '2016.1',
+    85.00,
+    ARRAY['IATF 16949', 'Automotive', 'PPAP', 'FMEA', 'Poka-Yoke', 'APQP'],
+    'Global automotive industry standard emphasizing defect prevention, variation reduction, and supply chain efficiency.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_iatf_s8', 'gtmpl_iatf16949', 'Clause 8: APQP, PPAP & Error-Proofing (Poka-Yoke)', 'Control plans, Failure Mode and Effects Analysis (FMEA), and sensor error-proofing.', 60.00, 1),
+    ('gsec_iatf_s9', 'gtmpl_iatf16949', 'Clause 9: Customer Specific Requirements (CSR) & Cpk', 'Statistical process control (SPC), capability indices (Cpk >= 1.33), and warranty analysis.', 40.00, 2)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_iatf_83', 'gsec_iatf_s8', 'IATF 16949: 8.5.1.1', 'Are all manufacturing control plans aligned directly with current Process FMEAs and Level 3 PPAP approvals?', 'Verify PFMEA RPN reduction trends, customer PPAP approval warrants, and station work instructions.', 'PASS_FAIL', 20.00, true, 1),
+    ('gq_iatf_91', 'gsec_iatf_s9', 'IATF 16949: 9.1.1.1', 'Are special characteristics measured with real-time SPC charts and verified for process capability Cpk >= 1.33?', 'Review automated measurement machine data, Gauge R&R studies (< 10%), and out-of-control reactions.', 'PASS_FAIL', 15.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.11 AS9100D Aerospace & Defense Quality Management System
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_as9100d',
+    'AS-9100D-2016',
+    'AS9100D Aerospace & Defense Quality Management System',
+    'AS9100D / EN 9100',
+    'Aerospace & Defense',
+    '2016.1',
+    88.00,
+    ARRAY['AS9100D', 'Aerospace', 'Defense', 'FOD', 'Counterfeit Parts', 'Traceability'],
+    'Standard tailored for aviation, space, and defense organizations ensuring flight safety, product reliability, and regulatory compliance.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_as9100_s7', 'gtmpl_as9100d', 'Clause 7: FOD Prevention & Tool Accountability', 'Foreign Object Debris (FOD) control zones, shadowed toolboxes, and clean build areas.', 40.00, 1),
+    ('gsec_as9100_s8', 'gtmpl_as9100d', 'Clause 8: Counterfeit Parts & Flight Safety Critical Items', 'Authorized distributor sourcing, destructive test verification, and full heat-lot traceability.', 60.00, 2)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_as9100_71', 'gsec_as9100_s7', 'AS9100D: 7.1.4', 'Are formal Foreign Object Debris (FOD) prevention programs and tool accountability shadow boards audited daily?', 'Inspect assembly bays, FOD barriers, employee badge swipe lockers, and missing tool incident logs.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_as9100_84', 'gsec_as9100_s8', 'AS9100D: 8.1.4', 'Is a documented Counterfeit Part Prevention program active per AS6174 / AS5553 with full pedigree certificates?', 'Check OEM certificates of conformance (CoC), raw material mill test reports, and XRF testing records.', 'PASS_FAIL', 20.00, true, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3.12 ISO 28000:2022 Security Management for the Supply Chain
+INSERT INTO public.global_templates (
+    id, code, title, standard, industry, version, passing_score, tags, description, created_by
+) VALUES (
+    'gtmpl_iso28000',
+    'ISO-28000-2022',
+    'ISO 28000:2022 Security Management for Supply Chain & Logistics',
+    'ISO 28000:2022',
+    'Logistics, Warehousing & Supply Chain',
+    '2022.1',
+    80.00,
+    ARRAY['ISO 28000', 'Supply Chain', 'Logistics', 'TAPA', 'C-TPAT', 'Cargo Security'],
+    'Requirements for a security management system, including aspects critical to security assurance of the supply chain.',
+    'usr_admin_01'
+) ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO public.global_sections (id, global_template_id, title, description, weight, order_index)
+VALUES
+    ('gsec_iso28000_s4', 'gtmpl_iso28000', 'Clause 4: Facility Perimeter & High-Value Vault Security', 'CCTV coverage, biometric turnstiles, visitor escorts, and electronic seal logs.', 50.00, 1),
+    ('gsec_iso28000_s8', 'gtmpl_iso28000', 'Clause 8: In-Transit Cargo Tracking & Route Risk Control', 'GPS geofencing, high-risk layover prevention, and ISO 17712 bolt seal verification.', 50.00, 2)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.global_questions (id, global_section_id, requirement_id, question, guidance, scoring_type, weight, mandatory, order_index)
+VALUES
+    ('gq_iso28000_43', 'gsec_iso28000_s4', 'ISO 28000: 4.3.1', 'Are logistics hubs and high-value cargo cages protected by 24/7 CCTV with 90-day archive and motion sensors?', 'Inspect perimeter fencing, access badges, alarm testing logs, and guard post logbooks.', 'PASS_FAIL', 15.00, true, 1),
+    ('gq_iso28000_82', 'gsec_iso28000_s8', 'ISO 28000: 8.2', 'Are ISO 17712 High-Security Bolt Seals verified and logged at dispatch and receipt with anti-tamper photos?', 'Audit seal logbooks, container inspection checklists (7-point inspection), and driver verification records.', 'PASS_FAIL', 15.00, true, 1)
 ON CONFLICT (id) DO NOTHING;
 
 -- ----------------------------------------------------------------------------

@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
-import { StatusBadge } from "../../shared/components/ui";
+import { StatusBadge, UserAvatar } from "../../shared/components/ui";
 
 interface CustomerDetailDrawerProps {
   customer: Customer;
@@ -156,10 +156,10 @@ export const CustomerDetailDrawer: React.FC<CustomerDetailDrawerProps> = ({
                   className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2.5">
-                    <img
+                    <UserAvatar
                       src={u.avatar}
-                      alt={u.name}
-                      className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200"
+                      name={u.name}
+                      size="md"
                     />
                     <div>
                       <div className="font-bold text-slate-900">{u.name}</div>

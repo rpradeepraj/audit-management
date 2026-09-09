@@ -43,9 +43,10 @@ export interface AuditContextType {
   }) => { success: boolean; error?: string };
   logout: () => void;
   users: User[];
-  addUser: (user: Omit<User, "id">) => string;
-  updateUser: (id: string, updates: Partial<User>) => void;
-  deleteUser: (id: string) => void;
+  addUser: (user: Omit<User, "id"> & { password?: string; confirmPassword?: string; firmId?: string }) => Promise<string> | string;
+  updateUser: (id: string, updates: Partial<User> & { password?: string; confirmPassword?: string; firmId?: string }) => Promise<void> | void;
+  deleteUser: (id: string) => Promise<void> | void;
+  uploadAvatar?: (file: File | string) => Promise<string>;
   firmRoles: FirmRole[];
   addFirmRole: (role: Omit<FirmRole, "id" | "createdAt">) => string;
   updateFirmRole: (id: string, updates: Partial<FirmRole>) => void;
@@ -54,12 +55,19 @@ export interface AuditContextType {
   selectedFirmId: string;
   setSelectedFirmId: (id: string) => void;
   selectedFirm: AuditFirm;
-  addFirm: (firm: Omit<AuditFirm, "id" | "createdAt">) => string;
-  updateFirm: (id: string, updates: Partial<AuditFirm>) => void;
-  deleteFirm: (id: string) => void;
+  addFirm: (firm: Omit<AuditFirm, "id" | "createdAt">) => Promise<string> | string;
+  updateFirm: (id: string, updates: Partial<AuditFirm>) => Promise<void> | void;
+  deleteFirm: (id: string) => Promise<void> | void;
   toggleFirmTemplate: (firmId: string, templateId: string) => void;
   companyProfile: CompanyProfile;
   updateCompanyProfile: (updates: Partial<CompanyProfile>) => void;
+  reloadFirms: () => Promise<void>;
+  isLoading: boolean;
+  successMessage: string | null;
+  errorMessage: string | null;
+  showSuccess: (msg: string) => void;
+  showError: (msg: string) => void;
+  clearMessage: () => void;
   customers: Customer[];
   templates: AuditTemplate[];
   audits: AuditPlan[];
@@ -90,7 +98,20 @@ export interface AuditContextType {
   addCustomer: (customer: Omit<Customer, "id" | "createdAt" | "totalAuditsCount" | "activeAuditsCount">) => void;
   updateCustomer: (id: string, updates: Partial<Customer>) => void;
   deleteCustomer: (id: string) => void;
-  addUserToFirm: (firmId: string, firmName: string, userData: { name: string; email: string; role: UserRole; department?: string; phone?: string; avatar?: string }) => User;
+  addUserToFirm: (
+    firmId: string,
+    firmName: string,
+    userData: {
+      name: string;
+      email: string;
+      role: UserRole;
+      password?: string;
+      confirmPassword?: string;
+      department?: string;
+      phone?: string;
+      avatar?: string;
+    }
+  ) => Promise<User> | User;
   addTemplate: (template: Omit<AuditTemplate, "id" | "createdAt" | "updatedAt">) => string;
   cloneTemplate: (templateId: string, customTitle?: string) => string;
   updateTemplate: (id: string, updates: Partial<AuditTemplate>) => void;

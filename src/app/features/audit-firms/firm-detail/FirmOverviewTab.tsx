@@ -13,7 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import { MultiSelectDropdown } from "../../../shared/components/ui";
-import { INDUSTRY_SCOPE_OPTIONS } from "../FirmModal";
+import { INDUSTRY_SCOPE_OPTIONS, parseIndustryScopeString } from "../FirmModal";
 
 interface FirmOverviewTabProps {
   firm: AuditFirm;
@@ -31,9 +31,7 @@ export const FirmOverviewTab: React.FC<FirmOverviewTabProps> = ({
     if (firm) setProfileForm(firm);
   }, [firm]);
 
-  const currentScopes = profileForm.industryScope
-    ? profileForm.industryScope.split(",").map((s) => s.trim()).filter(Boolean)
-    : [];
+  const currentScopes = parseIndustryScopeString(profileForm.industryScope);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,8 +78,12 @@ export const FirmOverviewTab: React.FC<FirmOverviewTabProps> = ({
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
               Headquarters
             </div>
-            <div className="text-xs font-bold text-slate-900 mt-0.5 line-clamp-1">{firm.address}</div>
-            <div className="text-xs text-slate-500">Est. {firm.establishedYear || "2020"}</div>
+            <div className="text-xs font-bold text-slate-900 mt-0.5 line-clamp-1">
+              {firm.address || "No address listed"}
+            </div>
+            <div className="text-[11px] text-slate-500">
+              {firm.establishedYear ? `Est. ${firm.establishedYear}` : "No year recorded"}
+            </div>
           </div>
         </div>
       </div>
@@ -133,13 +135,35 @@ export const FirmOverviewTab: React.FC<FirmOverviewTabProps> = ({
           <div>
             <MultiSelectDropdown
               label="Industry Scope of Surveillance"
-              options={INDUSTRY_SCOPE_OPTIONS}
+              options={Array.from(new Set([...INDUSTRY_SCOPE_OPTIONS, ...currentScopes]))}
               selectedValues={currentScopes}
               onChange={(values) =>
                 setProfileForm({ ...profileForm, industryScope: values.join(", ") })
               }
               placeholder="Select industry domains..."
             />
+            {currentScopes.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {currentScopes.map((scope) => (
+                  <span
+                    key={scope}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 text-xs font-semibold"
+                  >
+                    <span>{scope}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = currentScopes.filter((s) => s !== scope);
+                        setProfileForm({ ...profileForm, industryScope: updated.join(", ") });
+                      }}
+                      className="text-teal-600 hover:text-teal-900 font-bold ml-0.5 cursor-pointer"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -193,6 +217,19 @@ export const FirmOverviewTab: React.FC<FirmOverviewTabProps> = ({
                 className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">
+              Quality & Impartiality Policy
+            </label>
+            <textarea
+              rows={3}
+              placeholder="Firm commitment statement on conformity assessment integrity, confidentiality, and impartiality..."
+              value={profileForm.qualityPolicy || ""}
+              onChange={(e) => setProfileForm({ ...profileForm, qualityPolicy: e.target.value })}
+              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:bg-white resize-y transition-all"
+            />
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex items-center justify-end">

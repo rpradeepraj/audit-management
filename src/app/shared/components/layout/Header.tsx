@@ -10,6 +10,7 @@ import {
   PlusCircle,
   LogOut,
 } from "lucide-react";
+import { UserAvatar } from "../ui";
 
 interface HeaderProps {
   onOpenNotifications: () => void;
@@ -90,10 +91,10 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setRoleMenuOpen(!roleMenuOpen)}
             className="flex items-center gap-2.5 p-1.5 pl-2 pr-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-all text-left cursor-pointer"
           >
-            <img
+            <UserAvatar
               src={currentUser.avatar}
-              alt={currentUser.name}
-              className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-200"
+              name={currentUser.name}
+              size="sm"
             />
             <div className="hidden lg:block">
               <div className="text-xs font-semibold text-slate-800 leading-tight">
@@ -120,10 +121,10 @@ export const Header: React.FC<HeaderProps> = ({
               />
               <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-200 py-3 px-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-3">
                 <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                  <img
+                  <UserAvatar
                     src={currentUser.avatar}
-                    alt={currentUser.name}
-                    className="w-9 h-9 rounded-full object-cover ring-1 ring-slate-200"
+                    name={currentUser.name}
+                    size="md"
                   />
                   <div className="min-w-0">
                     <div className="text-xs font-semibold text-slate-900 truncate">

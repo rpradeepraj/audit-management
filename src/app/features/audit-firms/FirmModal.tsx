@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AuditFirm } from "../../shared/types/audit";
-import { Building2, X, Shield, Award, ChevronDown, Search, Check } from "lucide-react";
+import { Building2, X, Shield, Award, ChevronDown, Search, Check, Loader2 } from "lucide-react";
 
 export const INDUSTRY_SCOPE_OPTIONS = [
   "Information Security & Cybersecurity",
@@ -19,10 +19,44 @@ export const INDUSTRY_SCOPE_OPTIONS = [
   "Logistics & Supply Chain",
 ];
 
+export const parseIndustryScopeString = (
+  rawScope?: string | null,
+  knownOptions: string[] = INDUSTRY_SCOPE_OPTIONS
+): string[] => {
+  if (!rawScope || !rawScope.trim()) return [];
+
+  let remaining = rawScope.trim();
+  const matched: string[] = [];
+
+  // Sort known options by length descending to match longer strings first (e.g. ones with internal commas)
+  const sortedOptions = [...knownOptions].sort((a, b) => b.length - a.length);
+
+  for (const option of sortedOptions) {
+    if (remaining.includes(option)) {
+      matched.push(option);
+      remaining = remaining.split(option).join(";;");
+    }
+  }
+
+  // Split any remaining unmapped tokens by comma or semicolon
+  const leftovers = remaining
+    .split(/[,;]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  for (const item of leftovers) {
+    if (!matched.includes(item)) {
+      matched.push(item);
+    }
+  }
+
+  return matched;
+};
+
 interface FirmModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (firmData: Omit<AuditFirm, "id" | "createdAt">, editingId?: string) => void;
+  onSave: (firmData: Omit<AuditFirm, "id" | "createdAt">, editingId?: string) => Promise<void> | void;
   editingFirm?: AuditFirm | null;
 }
 
@@ -40,6 +74,7 @@ export const FirmModal: React.FC<FirmModalProps> = ({
   const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
   const [isScopeDropdownOpen, setIsScopeDropdownOpen] = useState(false);
   const [scopeSearchQuery, setScopeSearchQuery] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const scopeDropdownRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,40 +101,36 @@ export const FirmModal: React.FC<FirmModalProps> = ({
   const [notes, setNotes] = useState("");
 
   useEffect(() => {
+    setIsSubmitting(false);
     if (editingFirm) {
-      setName(editingFirm.name);
-      setCode(editingFirm.code);
-      setAccreditationNumber(editingFirm.accreditationNumber);
-      setAccreditationStandard(editingFirm.accreditationStandard);
-      setIndustryScope(editingFirm.industryScope);
-      const parsedScopes = (editingFirm.industryScope || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
+      setName(editingFirm.name || "");
+      setCode(editingFirm.code || "");
+      setAccreditationNumber(editingFirm.accreditationNumber || "");
+      setAccreditationStandard(editingFirm.accreditationStandard || "");
+      setIndustryScope(editingFirm.industryScope || "");
+      const parsedScopes = parseIndustryScopeString(editingFirm.industryScope);
       setSelectedScopes(parsedScopes);
-      setContactEmail(editingFirm.contactEmail);
-      setPhone(editingFirm.phone);
-      setAddress(editingFirm.address);
-      setWebsite(editingFirm.website);
-      setEstablishedYear(editingFirm.establishedYear);
-      setQualityPolicy(editingFirm.qualityPolicy);
+      setContactEmail(editingFirm.contactEmail || "");
+      setPhone(editingFirm.phone || "");
+      setAddress(editingFirm.address || "");
+      setWebsite(editingFirm.website || "");
+      setEstablishedYear(editingFirm.establishedYear || "");
+      setQualityPolicy(editingFirm.qualityPolicy || "");
       setStatus(editingFirm.status || "Active");
       setNotes(editingFirm.notes || "");
     } else {
       setName("");
       setCode("");
       setAccreditationNumber("");
-      setAccreditationStandard("ISO/IEC 17021-1:2015 & ISO 19011:2018");
+      setAccreditationStandard("");
       setIndustryScope("");
-      setSelectedScopes(["Manufacturing & Industrial Engineering", "Information Security & Cybersecurity"]);
+      setSelectedScopes([]);
       setContactEmail("");
       setPhone("");
       setAddress("");
-      setWebsite("https://");
-      setEstablishedYear(new Date().getFullYear().toString());
-      setQualityPolicy(
-        "Committed to rigorous conformity assessments, impartiality, and evidence-backed surveillance audits."
-      );
+      setWebsite("");
+      setEstablishedYear("");
+      setQualityPolicy("");
       setStatus("Active");
       setNotes("");
     }
@@ -107,9 +138,9 @@ export const FirmModal: React.FC<FirmModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !code.trim()) return;
+    if (!name.trim() || !code.trim() || isSubmitting) return;
 
     const initials =
       name
@@ -120,33 +151,34 @@ export const FirmModal: React.FC<FirmModalProps> = ({
         .join("")
         .toUpperCase() || "AF";
 
-    onSave(
-      {
-        name: name.trim(),
-        code: code.trim().toUpperCase(),
-        accreditationNumber: accreditationNumber.trim() || (editingFirm ? editingFirm.accreditationNumber : "ANAB-CB-2026"),
-        accreditationStandard: accreditationStandard.trim() || (editingFirm ? editingFirm.accreditationStandard : "ISO/IEC 17021-1:2015 & ISO 19011:2018"),
-        industryScope: (selectedScopes.length > 0 ? selectedScopes.join(", ") : industryScope).trim(),
-        contactEmail: contactEmail.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
-        website: website.trim(),
-        establishedYear: establishedYear.trim(),
-        qualityPolicy: qualityPolicy.trim(),
-        status: status || "Active",
-        notes: notes.trim(),
-        logoInitials: initials,
-        maintainedTemplateIds: editingFirm
-          ? editingFirm.maintainedTemplateIds
-          : [
-              "tmpl_ind_mfg_9001",
-              "tmpl_ind_tech_27001",
-              "tmpl_ind_soc2",
-            ],
-      },
-      editingFirm?.id
-    );
-    onClose();
+    setIsSubmitting(true);
+    try {
+      await onSave(
+        {
+          name: name.trim(),
+          code: code.trim().toUpperCase(),
+          accreditationNumber: accreditationNumber.trim() || (editingFirm ? editingFirm.accreditationNumber : ""),
+          accreditationStandard: accreditationStandard.trim() || (editingFirm ? editingFirm.accreditationStandard : ""),
+          industryScope: (selectedScopes.length > 0 ? selectedScopes.join(", ") : industryScope).trim(),
+          contactEmail: contactEmail.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          website: website.trim(),
+          establishedYear: establishedYear.trim(),
+          qualityPolicy: qualityPolicy.trim(),
+          status: status || "Active",
+          notes: notes.trim(),
+          logoInitials: initials,
+          maintainedTemplateIds: editingFirm ? editingFirm.maintainedTemplateIds : [],
+        },
+        editingFirm?.id
+      );
+      onClose();
+    } catch (error) {
+      console.error("Submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -212,7 +244,7 @@ export const FirmModal: React.FC<FirmModalProps> = ({
                 <label className="block text-xs font-bold text-slate-700">
                   Industry Scope of Surveillance (Multi-Select)
                 </label>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
                   {selectedScopes.length} Selected
                 </span>
               </div>
@@ -222,19 +254,33 @@ export const FirmModal: React.FC<FirmModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsScopeDropdownOpen((prev) => !prev)}
-                  className="w-full min-h-[40px] px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-medium text-left flex items-center justify-between gap-2 hover:bg-slate-100/80 transition-colors cursor-pointer"
+                  className="w-full min-h-[42px] px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 font-medium text-left flex items-center justify-between gap-2 hover:bg-slate-100/80 transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
                     {selectedScopes.length === 0 ? (
                       <span className="text-slate-400">Select industry domains and sectors...</span>
                     ) : (
-                      <span className="text-slate-800 font-semibold truncate">
-                        {selectedScopes.join(", ")}
-                      </span>
+                      selectedScopes.map((scope) => (
+                        <span
+                          key={scope}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200 text-[11px] font-semibold"
+                        >
+                          <span>{scope}</span>
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedScopes((prev) => prev.filter((s) => s !== scope));
+                            }}
+                            className="hover:text-teal-900 cursor-pointer font-bold text-xs"
+                          >
+                            ×
+                          </span>
+                        </span>
+                      ))
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
-                    <span className="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] bg-teal-100 text-teal-800 font-bold px-1.5 py-0.5 rounded">
                       {selectedScopes.length}
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${isScopeDropdownOpen ? "rotate-180" : ""}`} />
@@ -261,7 +307,7 @@ export const FirmModal: React.FC<FirmModalProps> = ({
                             setScopeSearchQuery("");
                           }
                         }}
-                        className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500"
+                        className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-teal-500"
                       />
                     </div>
 
@@ -270,7 +316,7 @@ export const FirmModal: React.FC<FirmModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setSelectedScopes([...INDUSTRY_SCOPE_OPTIONS])}
-                        className="text-indigo-600 hover:text-indigo-800 font-bold cursor-pointer"
+                        className="text-teal-700 hover:text-teal-900 font-bold cursor-pointer"
                       >
                         Select All
                       </button>
@@ -285,7 +331,7 @@ export const FirmModal: React.FC<FirmModalProps> = ({
 
                     {/* Options list */}
                     <div className="space-y-1">
-                      {INDUSTRY_SCOPE_OPTIONS
+                      {Array.from(new Set([...INDUSTRY_SCOPE_OPTIONS, ...selectedScopes]))
                         .filter((item) =>
                           item.toLowerCase().includes(scopeSearchQuery.toLowerCase())
                         )
@@ -303,14 +349,14 @@ export const FirmModal: React.FC<FirmModalProps> = ({
                               }}
                               className={`p-2 rounded-lg flex items-center gap-2.5 cursor-pointer transition-colors ${
                                 isSelected
-                                  ? "bg-indigo-50/80 border border-indigo-200"
+                                  ? "bg-teal-50/80 border border-teal-200"
                                   : "hover:bg-slate-50 border border-transparent"
                               }`}
                             >
                               <div
                                 className={`w-4 h-4 rounded flex items-center justify-center text-xs shrink-0 border ${
                                   isSelected
-                                    ? "bg-indigo-600 border-indigo-600 text-white"
+                                    ? "bg-teal-600 border-teal-600 text-white"
                                     : "border-slate-300 bg-white"
                                 }`}
                               >
@@ -334,7 +380,7 @@ export const FirmModal: React.FC<FirmModalProps> = ({
                               }
                               setScopeSearchQuery("");
                             }}
-                            className="w-full text-left p-2 rounded-lg bg-indigo-50/60 hover:bg-indigo-100/80 text-indigo-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                            className="w-full text-left p-2 rounded-lg bg-teal-50/60 hover:bg-teal-100/80 text-teal-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>+ Add &quot;{scopeSearchQuery.trim()}&quot; as custom scope</span>
                           </button>
@@ -432,15 +478,28 @@ export const FirmModal: React.FC<FirmModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs shadow-indigo-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+              disabled={isSubmitting}
+              className={`px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer ${
+                isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+              }`}
             >
-              <span>{editingFirm ? "Save Changes" : "Register Firm"}</span>
+              {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              <span>
+                {isSubmitting
+                  ? editingFirm
+                    ? "Saving Changes..."
+                    : "Registering Firm..."
+                  : editingFirm
+                  ? "Save Changes"
+                  : "Register Firm"}
+              </span>
             </button>
           </div>
         </form>

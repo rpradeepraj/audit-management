@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { APP_ROUTES } from "@/shared/routes";
+import { UserAvatar } from "@/shared/components/ui";
 
 interface NavItemConfig {
   id: ActiveTab;
@@ -117,10 +118,10 @@ export const Sidebar: React.FC = () => {
       {/* Active User Card */}
       <div className="px-3.5 py-2.5 bg-slate-950/50 border-b border-slate-800/80 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <img
-            src={currentUser.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-            alt={currentUser.name}
-            className="w-7 h-7 rounded-full object-cover ring-1 ring-slate-700 shrink-0"
+          <UserAvatar
+            src={currentUser.avatar}
+            name={currentUser.name}
+            size="sm"
           />
           <div className="min-w-0">
             <div className="text-xs font-bold text-white truncate leading-tight">

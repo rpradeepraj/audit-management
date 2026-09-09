@@ -33,6 +33,16 @@ const STORAGE_KEYS = {
   USERS: "ams_users_v2",
 };
 
+const DEFAULT_AUTH_USER: User = {
+  id: "usr_admin",
+  name: "Platform Admin",
+  email: "admin@ams.io",
+  role: "Platform Admin",
+  companyName: "AMS Platform",
+  companyId: "platform_root",
+  status: "Active",
+};
+
 export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { addAuditLog, addNotification, setActiveTab } = useNotifications();
   const { users, setUsers } = useUserManagement();
@@ -40,7 +50,7 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   const [currentUser, setCurrentUser] = useState<User>(() => {
-    if (typeof window === "undefined") return INITIAL_USERS[0];
+    if (typeof window === "undefined") return DEFAULT_AUTH_USER;
     const savedUserObj = localStorage.getItem("ams_current_user_object_v2");
     if (savedUserObj) {
       try {
@@ -50,9 +60,9 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
     const savedId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
     const savedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-    const userPool: User[] = savedUsers ? JSON.parse(savedUsers) : INITIAL_USERS;
+    const userPool: User[] = savedUsers ? JSON.parse(savedUsers) : [];
     const found = userPool.find((u) => u.id === savedId);
-    return found || INITIAL_USERS[0];
+    return found || DEFAULT_AUTH_USER;
   });
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -61,6 +71,34 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return savedAuth !== null ? savedAuth === "true" : false;
   });
 
+  // Helper to ensure a valid JWT token exists for the active session
+  const syncSessionToken = async (user: User) => {
+    try {
+      const res = await fetch("/api/auth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          companyId: user.companyId,
+          companyName: user.companyName,
+          Organization: (user as any).Organization || user.companyName,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const token = data.token || data.data?.token;
+        if (data.success && token) {
+          authService.setToken(token);
+        }
+      }
+    } catch {
+      // Non-blocking
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedAuth = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED);
@@ -68,18 +106,31 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setIsAuthenticated(isAuth);
 
       const savedUserObj = localStorage.getItem("ams_current_user_object_v2");
+      let activeUser = currentUser;
       if (savedUserObj) {
         try {
           const parsed = JSON.parse(savedUserObj);
-          if (parsed && parsed.id) setCurrentUser(parsed);
+          if (parsed && parsed.id) {
+            activeUser = parsed;
+            setCurrentUser(parsed);
+          }
         } catch {}
       } else {
         const savedId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
         if (savedId) {
           const found = users.find((u) => u.id === savedId);
-          if (found) setCurrentUser(found);
+          if (found) {
+            activeUser = found;
+            setCurrentUser(found);
+          }
         }
       }
+
+      // Ensure token is synced if missing
+      if (!authService.getToken() && activeUser) {
+        syncSessionToken(activeUser);
+      }
+
       setIsInitialized(true);
     }
   }, [users]);
@@ -88,6 +139,9 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (typeof window !== "undefined" && isInitialized) {
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, currentUser.id);
       localStorage.setItem("ams_current_user_object_v2", JSON.stringify(currentUser));
+      if (!authService.getToken()) {
+        syncSessionToken(currentUser);
+      }
     }
   }, [currentUser, isInitialized]);
 
@@ -100,6 +154,7 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const login = (user: User) => {
     setCurrentUser(user);
     setIsAuthenticated(true);
+    syncSessionToken(user);
     setActiveTab("dashboard");
     if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, user.id);
@@ -200,7 +255,7 @@ export const AuthSessionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   const resetSessionData = () => {
-    setCurrentUser(INITIAL_USERS[2]);
+    setCurrentUser(DEFAULT_AUTH_USER);
     setIsAuthenticated(false);
   };
 

@@ -2,9 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { AuditFirm, CompanyProfile } from "../../shared/types/audit";
-import { INITIAL_FIRMS } from "../data/mockData";
 import { useNotifications } from "./NotificationContext";
 import { useAuthSession } from "./AuthSessionContext";
+import { authFetch } from "../../shared/services/authService";
 
 export interface FirmContextType {
   firms: AuditFirm[];
@@ -12,141 +12,278 @@ export interface FirmContextType {
   setSelectedFirmId: (id: string) => void;
   selectedFirm: AuditFirm;
   companyProfile: CompanyProfile;
-  addFirm: (firm: Omit<AuditFirm, "id" | "createdAt">) => string;
-  updateFirm: (id: string, updates: Partial<AuditFirm>) => void;
-  deleteFirm: (id: string) => void;
+  addFirm: (firm: Omit<AuditFirm, "id" | "createdAt">) => Promise<string>;
+  updateFirm: (id: string, updates: Partial<AuditFirm>) => Promise<void>;
+  deleteFirm: (id: string) => Promise<void>;
   toggleFirmTemplate: (firmId: string, templateId: string) => void;
   updateCompanyProfile: (updates: Partial<CompanyProfile>) => void;
   resetFirmData: () => void;
+  reloadFirms: () => Promise<void>;
+  isLoading: boolean;
+  successMessage: string | null;
+  errorMessage: string | null;
+  showSuccess: (msg: string) => void;
+  showError: (msg: string) => void;
+  clearMessage: () => void;
 }
 
 const FirmContext = createContext<FirmContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  FIRMS: "ams_firms_v2",
-  SELECTED_FIRM_ID: "ams_selected_firm_id_v2",
+const DEFAULT_EMPTY_FIRM: AuditFirm = {
+  id: "firm_empty",
+  name: "Audit Firm",
+  code: "FIRM",
+  accreditationNumber: "",
+  accreditationStandard: "",
+  industryScope: "",
+  contactEmail: "contact@auditfirm.com",
+  phone: "",
+  address: "",
+  website: "",
+  logoInitials: "AF",
+  establishedYear: "",
+  qualityPolicy: "",
+  status: "Active",
+  maintainedTemplateIds: [],
+  createdAt: new Date().toISOString().split("T")[0],
 };
 
 export const FirmProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { addAuditLog, addNotification } = useNotifications();
   const { currentUser } = useAuthSession();
 
-  const [firms, setFirms] = useState<AuditFirm[]>(() => {
-    if (typeof window === "undefined") return INITIAL_FIRMS;
-    const saved = localStorage.getItem(STORAGE_KEYS.FIRMS);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch {
-        // fallback
-      }
-    }
-    return INITIAL_FIRMS;
-  });
+  const [firms, setFirms] = useState<AuditFirm[]>([]);
+  const [selectedFirmId, setSelectedFirmId] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [selectedFirmId, setSelectedFirmId] = useState<string>(() => {
-    if (typeof window === "undefined") return INITIAL_FIRMS[0].id;
-    const saved = localStorage.getItem(STORAGE_KEYS.SELECTED_FIRM_ID);
-    if (saved && INITIAL_FIRMS.some((f) => f.id === saved)) {
-      return saved;
-    }
-    const cyber = INITIAL_FIRMS.find((f) => f.id === "firm_cyber_guard" || f.name.includes("CyberGuard"));
-    return cyber ? cyber.id : INITIAL_FIRMS[0].id;
-  });
+  const showSuccess = (msg: string) => {
+    setSuccessMessage(msg);
+    setErrorMessage(null);
+    setTimeout(() => {
+      setSuccessMessage((current) => (current === msg ? null : current));
+    }, 4500);
+  };
 
-  // Sync user's organization from Auth at render/mount time
-  useEffect(() => {
-    const orgName = currentUser?.Organization || currentUser?.companyName;
-    const orgId = currentUser?.companyId || "1";
+  const showError = (msg: string) => {
+    setErrorMessage(msg);
+    setSuccessMessage(null);
+    setTimeout(() => {
+      setErrorMessage((current) => (current === msg ? null : current));
+    }, 5500);
+  };
 
-    if (orgName) {
-      setFirms((prev) => {
-        const existing = prev.find((f) => f.id === orgId || f.name.toLowerCase() === orgName.toLowerCase());
-        if (!existing) {
-          const newFirm: AuditFirm = {
-            id: orgId,
-            name: orgName,
-            code: orgName.substring(0, 4).toUpperCase(),
-            accreditationNumber: "ACC-2026-098",
-            accreditationStandard: "ISO/IEC 17021-1:2015",
-            industryScope: "Full Scope Global Assurance & Certification",
-            contactEmail: currentUser.email || "governance@auditfirm.com",
-            phone: currentUser.phone || "+1 (800) 555-0199",
-            address: "Global Headquarters",
-            website: "https://www.auditfirm.com",
-            logoInitials: orgName.substring(0, 2).toUpperCase(),
-            establishedYear: "2018",
-            qualityPolicy: "Commitment to independence, technical rigor, and zero-defect auditing.",
-            status: "Active",
-            maintainedTemplateIds: ["tmpl_ind_mfg_9001", "tmpl_ind_tech_27001"],
-            createdAt: new Date().toISOString().split("T")[0],
-          };
-          return [newFirm, ...prev];
+  const clearMessage = () => {
+    setSuccessMessage(null);
+    setErrorMessage(null);
+  };
+
+  // Strictly fetch firms from Supabase Read API filtered by user id when available
+  const fetchFirmsFromApi = async () => {
+    setIsLoading(true);
+    try {
+      const url = currentUser?.id
+        ? `/api/firms?userId=${encodeURIComponent(currentUser.id)}`
+        : "/api/firms";
+      const res = await authFetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.firms)) {
+          const apiFirms: AuditFirm[] = data.firms.map((af: any) => ({
+            id: af.id,
+            name: af.name,
+            code: af.code,
+            accreditationNumber: af.accreditationNumber || "",
+            accreditationStandard: af.accreditationStandard || "",
+            industryScope: af.industryScope || "",
+            contactEmail: af.contactEmail || "",
+            phone: af.phone || "",
+            address: af.address || "",
+            website: af.website || "",
+            logoInitials: af.logoInitials || (af.name ? af.name.substring(0, 2).toUpperCase() : "AF"),
+            establishedYear: af.establishedYear || "",
+            qualityPolicy: af.qualityPolicy || "",
+            status: af.status || (af.isActive ? "Active" : "Inactive"),
+            maintainedTemplateIds: af.maintainedTemplates?.map((t: any) => t.id) || [],
+            createdAt: af.createdAt || new Date().toISOString().split("T")[0],
+            assignedStaff: Array.isArray(af.assignedStaff)
+              ? af.assignedStaff.map((u: any) => ({
+                  id: u.id,
+                  name: u.name,
+                  email: u.email,
+                  role: u.role,
+                  avatar: u.avatar || "",
+                  phone: u.phone || "",
+                  companyId: af.id,
+                  companyName: af.name,
+                  status: u.isActive !== false ? "Active" : "Inactive",
+                  joinedDate: u.created_on || "",
+                  firms: [{ id: af.id, name: af.name, code: af.code }],
+                }))
+              : [],
+          }));
+
+          setFirms(apiFirms);
+          if (apiFirms.length > 0) {
+            setSelectedFirmId((prev) => {
+              if (prev && apiFirms.some((f) => f.id === prev)) return prev;
+              return apiFirms[0].id;
+            });
+          }
         }
-        return prev;
-      });
-
-      setSelectedFirmId(orgId);
+      }
+    } catch (error) {
+      console.error("Failed to load audit firms from Supabase:", error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [currentUser]);
+  };
+
+  useEffect(() => {
+    fetchFirmsFromApi();
+  }, [currentUser?.id]);
 
   const selectedFirm: AuditFirm =
     firms.find((f) => f.id === selectedFirmId) ||
-    firms.find((f) => currentUser.companyName && f.name.toLowerCase() === currentUser.companyName.toLowerCase()) ||
     firms[0] ||
-    INITIAL_FIRMS[0];
+    DEFAULT_EMPTY_FIRM;
 
   const companyProfile: CompanyProfile = selectedFirm;
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.FIRMS, JSON.stringify(firms));
-    }
-  }, [firms]);
+  const addFirm = async (firmData: Omit<AuditFirm, "id" | "createdAt">): Promise<string> => {
+    try {
+      const res = await authFetch("/api/firms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: firmData.name,
+          code: firmData.code,
+          contactEmail: firmData.contactEmail,
+          phone: firmData.phone,
+          address: firmData.address,
+          website: firmData.website,
+          establishedYear: firmData.establishedYear,
+          qualityPolicy: firmData.qualityPolicy,
+          status: firmData.status || "Active",
+          accreditationNumber: firmData.accreditationNumber,
+          accreditationStandard: firmData.accreditationStandard,
+          industryScope: firmData.industryScope,
+          notes: firmData.notes,
+          userId: currentUser?.id,
+          createBy: currentUser?.id,
+        }),
+      });
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.SELECTED_FIRM_ID, selectedFirmId);
-    }
-  }, [selectedFirmId]);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to create firm in Supabase");
+      }
 
-  const addFirm = (firmData: Omit<AuditFirm, "id" | "createdAt">): string => {
-    const newId = `firm_${Date.now()}`;
-    const newFirm: AuditFirm = {
-      ...firmData,
-      id: newId,
-      createdAt: new Date().toISOString().split("T")[0],
-      maintainedTemplateIds: firmData.maintainedTemplateIds || [
-        "tmpl_ind_mfg_9001",
-        "tmpl_ind_tech_27001",
-      ],
-    };
-    setFirms((prev) => [...prev, newFirm]);
-    addAuditLog("Added Audit Firm", "Firm", newId, `Registered new audit firm: ${newFirm.name} (${newFirm.code})`, currentUser);
-    addNotification("New Audit Firm Registered", `Audit firm '${newFirm.name}' was successfully added.`, "success", "company-admin");
-    return newId;
+      const created = data.data;
+      const createdFirm: AuditFirm = {
+        id: created.id,
+        name: created.name,
+        code: created.code,
+        accreditationNumber: created.accreditationNumber || firmData.accreditationNumber || "",
+        accreditationStandard: created.accreditationStandard || firmData.accreditationStandard || "",
+        industryScope: created.industryScope || firmData.industryScope || "",
+        contactEmail: created.contactEmail,
+        phone: created.phone || "",
+        address: created.address || "",
+        website: created.website || "",
+        logoInitials: created.logoInitials || firmData.logoInitials || "AF",
+        establishedYear: created.establishedYear || "",
+        qualityPolicy: created.qualityPolicy || "",
+        status: created.status || "Active",
+        maintainedTemplateIds: firmData.maintainedTemplateIds || [],
+        createdAt: created.createdAt || new Date().toISOString().split("T")[0],
+      };
+
+      setFirms((prev) => [...prev, createdFirm]);
+      setSelectedFirmId(createdFirm.id);
+      showSuccess(`Audit firm "${createdFirm.name}" (${createdFirm.code}) was successfully registered and linked.`);
+      addAuditLog("Added Audit Firm", "Firm", createdFirm.id, `Registered new audit firm in Supabase: ${createdFirm.name} (${createdFirm.code})`, currentUser);
+      addNotification("New Audit Firm Registered", `Audit firm '${createdFirm.name}' was successfully added to Supabase.`, "success", "company-admin");
+      return createdFirm.id;
+    } catch (err: any) {
+      console.error("Error creating firm in Supabase:", err);
+      showError(err.message || "Failed to register audit firm.");
+      addNotification("Firm Registration Error", err.message || "Failed to register firm", "warning", "company-admin");
+      throw err;
+    }
   };
 
-  const updateFirm = (id: string, updates: Partial<AuditFirm>) => {
-    setFirms((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
-    addAuditLog("Updated Audit Firm", "Firm", id, `Updated configuration for firm ${updates.name || id}`, currentUser);
-    addNotification("Audit Firm Updated", `Firm details for '${updates.name || id}' were saved.`, "info", "company-admin");
+  const updateFirm = async (id: string, updates: Partial<AuditFirm>): Promise<void> => {
+    try {
+      const res = await authFetch(`/api/firms/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: updates.name,
+          code: updates.code,
+          contactEmail: updates.contactEmail,
+          phone: updates.phone,
+          address: updates.address,
+          website: updates.website,
+          establishedYear: updates.establishedYear,
+          qualityPolicy: updates.qualityPolicy,
+          status: updates.status,
+          accreditationNumber: updates.accreditationNumber,
+          accreditationStandard: updates.accreditationStandard,
+          industryScope: updates.industryScope,
+          notes: updates.notes,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to update firm in Supabase");
+      }
+
+      setFirms((prev) => prev.map((f) => (f.id === id ? { ...f, ...updates } : f)));
+      showSuccess(`Audit firm "${updates.name || id}" details updated successfully.`);
+      addAuditLog("Updated Audit Firm", "Firm", id, `Updated configuration in Supabase for firm ${updates.name || id}`, currentUser);
+      addNotification("Audit Firm Updated", `Firm details for '${updates.name || id}' were saved to Supabase.`, "info", "company-admin");
+    } catch (err: any) {
+      console.error("Error updating firm in Supabase:", err);
+      showError(err.message || "Failed to update firm details.");
+      addNotification("Firm Update Error", err.message || "Failed to update firm", "warning", "company-admin");
+      throw err;
+    }
   };
 
-  const deleteFirm = (id: string) => {
+  const deleteFirm = async (id: string): Promise<void> => {
     const firmToDelete = firms.find((f) => f.id === id);
     if (firms.length <= 1) {
-      alert("At least one active audit firm must remain in the platform.");
+      showError("At least one active audit firm must remain in the platform.");
       return;
     }
-    const updated = firms.filter((f) => f.id !== id);
-    setFirms(updated);
-    if (selectedFirmId === id) {
-      setSelectedFirmId(updated[0]?.id || "");
+
+    try {
+      const res = await authFetch(`/api/firms/${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to delete firm from Supabase");
+      }
+
+      const updated = firms.filter((f) => f.id !== id);
+      setFirms(updated);
+      if (selectedFirmId === id) {
+        setSelectedFirmId(updated[0]?.id || "");
+      }
+      showSuccess(`Audit firm "${firmToDelete?.name || id}" was successfully removed.`);
+      addAuditLog("Deleted Audit Firm", "Firm", id, `Removed audit firm from Supabase: ${firmToDelete?.name || id}`, currentUser);
+      addNotification("Audit Firm Removed", `Audit firm '${firmToDelete?.name || id}' was deleted from Supabase.`, "warning", "company-admin");
+    } catch (err: any) {
+      console.error("Error deleting firm in Supabase:", err);
+      showError(err.message || "Failed to delete audit firm.");
+      addNotification("Firm Deletion Error", err.message || "Failed to delete firm", "warning", "company-admin");
+      throw err;
     }
-    addAuditLog("Deleted Audit Firm", "Firm", id, `Removed audit firm: ${firmToDelete?.name || id}`, currentUser);
-    addNotification("Audit Firm Removed", `Audit firm '${firmToDelete?.name || id}' was deleted.`, "warning", "company-admin");
   };
 
   const toggleFirmTemplate = (firmId: string, templateId: string) => {
@@ -169,8 +306,7 @@ export const FirmProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resetFirmData = () => {
-    setFirms(INITIAL_FIRMS);
-    setSelectedFirmId(INITIAL_FIRMS[0].id);
+    fetchFirmsFromApi();
   };
 
   return (
@@ -187,6 +323,13 @@ export const FirmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toggleFirmTemplate,
         updateCompanyProfile,
         resetFirmData,
+        reloadFirms: fetchFirmsFromApi,
+        isLoading,
+        successMessage,
+        errorMessage,
+        showSuccess,
+        showError,
+        clearMessage,
       }}
     >
       {children}
@@ -201,3 +344,5 @@ export const useFirm = () => {
   }
   return context;
 };
+
+export default FirmContext;

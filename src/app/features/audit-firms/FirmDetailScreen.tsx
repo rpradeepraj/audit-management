@@ -61,14 +61,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
     );
   }
 
-  const staffCount = users.filter(
-    (u) =>
-      u.companyId === firm.id ||
-      u.companyName === firm.name ||
-      u.role === "Auditor" ||
-      u.role === "Audit Manager" ||
-      u.role === "Company Admin"
-  ).length;
+  const staffCount = (firm.assignedStaff || []).length;
 
   return (
     <div className="w-full p-3 sm:p-4 space-y-4">
@@ -186,15 +179,7 @@ export const FirmDetailScreen: React.FC<FirmDetailScreenProps> = ({
       )}
 
       {activeSection === "users" && (
-        <FirmStaffTab
-          firm={firm}
-          users={users}
-          onAddUser={(userData) =>
-            addUserToFirm(firm.id, firm.name, userData)
-          }
-          onUpdateUser={(id, updates) => updateUser(id, updates)}
-          onDeleteUser={(id) => deleteUser(id)}
-        />
+        <FirmStaffTab firm={firm} />
       )}
 
       {activeSection === "templates" && (

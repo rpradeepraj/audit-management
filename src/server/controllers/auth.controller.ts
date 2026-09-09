@@ -95,6 +95,43 @@ export const authController = {
       return handleApiError(error);
     }
   },
+
+  /**
+   * POST /api/auth/token
+   * Issues a signed JWT token for an active user session.
+   */
+  async issueSessionToken(req: NextRequest) {
+    try {
+      const body = await req.json().catch(() => ({}));
+      if (!body.id || !body.email) {
+        return ApiResponse.error("User ID and Email are required to issue a token.", 400);
+      }
+
+      const token = authBackendService.generateToken({
+        id: body.id,
+        email: body.email,
+        name: body.name || "User",
+        role: body.role || "Auditor",
+        firm_id: body.firm_id || body.companyId || "",
+        companyName: body.companyName || "Audit Firm",
+        Organization: body.Organization || body.companyName || "Audit Firm",
+      });
+
+      const response = ApiResponse.success({ token, token_type: "Bearer" }, "Token issued successfully", 200);
+
+      response.cookies.set("ams_auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+
+      return response;
+    } catch (error: any) {
+      return handleApiError(error);
+    }
+  },
 };
 
 export default authController;

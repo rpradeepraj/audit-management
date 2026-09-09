@@ -31,14 +31,43 @@ export const authBackendService = {
   },
 
   /**
-   * Verifies and decodes a JWT token.
+   * Verifies and decodes a JWT token synchronously.
    */
   verifyToken(token: string): UserPayload | null {
+    if (!token) return null;
     try {
       return jwt.verify(token, supabaseConfig.jwtSecret) as UserPayload;
     } catch {
       return null;
     }
+  },
+
+  /**
+   * Verifies and decodes a JWT token with Supabase Auth fallback.
+   */
+  async verifyTokenAsync(token: string): Promise<UserPayload | null> {
+    if (!token) return null;
+    const verified = this.verifyToken(token);
+    if (verified) return verified;
+
+    try {
+      const { data, error } = await supabase.auth.getUser(token);
+      if (!error && data?.user) {
+        const u = data.user;
+        return {
+          id: u.id,
+          email: u.email || "",
+          name: u.user_metadata?.name || "User",
+          role: u.user_metadata?.role || "Auditor",
+          firm_id: u.user_metadata?.firm_id || "",
+          companyName: u.user_metadata?.companyName || "Audit Firm",
+        };
+      }
+    } catch {
+      // Ignored
+    }
+
+    return null;
   },
 
   /**

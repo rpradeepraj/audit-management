@@ -95,11 +95,31 @@ export function logoutUser(): void {
   removeToken();
 }
 
+export function getAuthHeaders(customHeaders: Record<string, string> = {}): Record<string, string> {
+  const token = getToken();
+  const headers: Record<string, string> = { ...customHeaders };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const headers = getAuthHeaders((options.headers as Record<string, string>) || {});
+  return fetch(url, {
+    ...options,
+    headers,
+    credentials: options.credentials || "include",
+  });
+}
+
 export const authService = {
   getToken,
   setToken,
   removeToken,
   isAuthenticated,
+  getAuthHeaders,
+  authFetch,
   login: loginUser,
   getCurrentUser,
   logout: logoutUser,

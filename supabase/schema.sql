@@ -202,6 +202,7 @@ CREATE TABLE public.firm (
     website VARCHAR(255),
     established_year VARCHAR(10),
     quality_policy TEXT,
+    "Scope_Surveillance" TEXT,
     is_active BOOLEAN DEFAULT true NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     created_on DATE DEFAULT CURRENT_DATE NOT NULL,
@@ -209,7 +210,7 @@ CREATE TABLE public.firm (
     last_modified_on DATE DEFAULT CURRENT_DATE NOT NULL
 );
 
--- 3.2 Users (Identity, Access Credentials & Firm Affiliation)
+-- 3.2 Users (Identity, Access Credentials & Platform Profile)
 CREATE TABLE public.users (
     id TEXT PRIMARY KEY DEFAULT ('usr_' || replace(uuid_generate_v4()::text, '-', '')),
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -218,7 +219,6 @@ CREATE TABLE public.users (
     role user_role_type DEFAULT 'Auditor' NOT NULL,
     phone VARCHAR(50),
     avatar TEXT,
-    firm_id TEXT REFERENCES public.firm(id) ON DELETE SET NULL,
     is_active BOOLEAN DEFAULT true NOT NULL,
     last_login_at TIMESTAMPTZ,
     last_login_on DATE,
@@ -226,7 +226,21 @@ CREATE TABLE public.users (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     created_on DATE DEFAULT CURRENT_DATE NOT NULL,
     last_modified_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
-    last_modified_on DATE DEFAULT CURRENT_DATE NOT NULL
+    last_modified_on DATE DEFAULT CURRENT_DATE NOT NULL,
+    "Organization" TEXT
+);
+
+-- 3.2.1 User-Firm Junction Table (Multi-Firm User Affiliation)
+CREATE TABLE public.user_firms (
+    id TEXT PRIMARY KEY DEFAULT ('uf_' || replace(uuid_generate_v4()::text, '-', '')),
+    firm_id TEXT NOT NULL REFERENCES public.firm(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    create_by TEXT,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    created_on DATE DEFAULT CURRENT_DATE NOT NULL,
+    last_modifyed_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    last_modtfy_on DATE DEFAULT CURRENT_DATE NOT NULL,
+    UNIQUE (user_id, firm_id)
 );
 
 -- ----------------------------------------------------------------------------
@@ -387,15 +401,14 @@ CREATE TABLE public.audit_plans (
     last_modified_on DATE DEFAULT CURRENT_DATE NOT NULL
 );
 
--- Audit Team Members (Engagement Assignments)
+-- Audit Team Members (Firm Team Roster)
 CREATE TABLE public.audit_team_members (
     id TEXT PRIMARY KEY DEFAULT ('atm_' || replace(uuid_generate_v4()::text, '-', '')),
-    audit_id TEXT NOT NULL REFERENCES public.audit_plans(id) ON DELETE CASCADE,
+    firm_id TEXT NOT NULL REFERENCES public.firm(id) ON DELETE CASCADE,
     user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    role_in_team VARCHAR(100) DEFAULT 'Auditor' NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     created_on DATE DEFAULT CURRENT_DATE NOT NULL,
-    UNIQUE (audit_id, user_id)
+    UNIQUE (firm_id, user_id)
 );
 
 -- Audit Checklist Responses (Evaluation, Scores & Severities per Checklist Question)
@@ -644,7 +657,8 @@ END $$;
 CREATE INDEX idx_firm_code ON public.firm(code);
 CREATE INDEX idx_firm_is_active ON public.firm(is_active);
 CREATE INDEX idx_users_email ON public.users(email);
-CREATE INDEX idx_users_firm ON public.users(firm_id);
+CREATE INDEX idx_user_firms_user ON public.user_firms(user_id);
+CREATE INDEX idx_user_firms_firm ON public.user_firms(firm_id);
 CREATE INDEX idx_users_role ON public.users(role);
 
 -- Global Template Hierarchy
@@ -676,8 +690,7 @@ CREATE INDEX idx_audit_plans_firm_template ON public.audit_plans(firm_template_i
 CREATE INDEX idx_audit_plans_global_template ON public.audit_plans(global_template_id);
 CREATE INDEX idx_audit_plans_lead_auditor ON public.audit_plans(lead_auditor_id);
 CREATE INDEX idx_audit_plans_status ON public.audit_plans(status);
-CREATE INDEX idx_audit_plans_dates ON public.audit_plans(start_date, end_date);
-CREATE INDEX idx_audit_team_audit ON public.audit_team_members(audit_id);
+CREATE INDEX idx_audit_team_firm ON public.audit_team_members(firm_id);
 CREATE INDEX idx_audit_team_user ON public.audit_team_members(user_id);
 
 -- Audit Checklist Responses
@@ -800,16 +813,18 @@ SELECT
     f.website,
     f.established_year,
     f.quality_policy,
+    f."Scope_Surveillance",
     f.is_active,
     f.created_at,
     f.created_on,
     f.last_modified_at,
     f.last_modified_on,
-    COUNT(DISTINCT u.id) AS total_active_staff_count,
+    COUNT(DISTINCT uf.user_id) AS total_active_staff_count,
     COUNT(DISTINCT ft.id) AS total_firm_templates_count,
     COUNT(DISTINCT ap.id) AS total_audits_count
 FROM public.firm f
-LEFT JOIN public.users u ON f.id = u.firm_id AND u.is_active = true
+LEFT JOIN public.user_firms uf ON f.id = uf.firm_id
+LEFT JOIN public.users u ON uf.user_id = u.id AND u.is_active = true
 LEFT JOIN public.firm_templates ft ON f.id = ft.firm_id AND ft.is_active = true
 LEFT JOIN public.audit_plans ap ON f.id = ap.firm_id
 GROUP BY f.id;
@@ -851,7 +866,7 @@ SELECT
             DISTINCT jsonb_build_object(
                 'user_id', atm.user_id,
                 'user_name', tu.name,
-                'role_in_team', atm.role_in_team
+                'role', tu.role
             )
         ) FILTER (WHERE atm.id IS NOT NULL),
         '[]'::jsonb
@@ -866,7 +881,7 @@ LEFT JOIN public.firm f ON a.firm_id = f.id
 LEFT JOIN public.firm_templates ft ON a.firm_template_id = ft.id
 LEFT JOIN public.global_templates gt ON a.global_template_id = gt.id
 LEFT JOIN public.users u ON a.lead_auditor_id = u.id
-LEFT JOIN public.audit_team_members atm ON a.id = atm.audit_id
+LEFT JOIN public.audit_team_members atm ON a.firm_id = atm.firm_id
 LEFT JOIN public.users tu ON atm.user_id = tu.id
 LEFT JOIN public.audit_checklist_responses r ON a.id = r.audit_id
 LEFT JOIN public.audit_findings fnd ON a.id = fnd.audit_id

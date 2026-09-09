@@ -5,3 +5,4 @@ export * from "./EmptyState";
 export * from "./Modal";
 export * from "./MultiSelectDropdown";
 export * from "./EvidenceUploadModal";
+export * from "./UserAvatar";

@@ -25,14 +25,7 @@ export const FirmGridView: React.FC<FirmGridViewProps> = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {firms.map((firm) => {
-        const staffCount = users.filter(
-          (u) =>
-            u.companyId === firm.id ||
-            u.companyName === firm.name ||
-            u.role === "Auditor" ||
-            u.role === "Audit Manager" ||
-            u.role === "Company Admin"
-        ).length;
+        const staffCount = (firm.assignedStaff || []).length;
 
         const isSelected = selectedFirmId === firm.id;
 
